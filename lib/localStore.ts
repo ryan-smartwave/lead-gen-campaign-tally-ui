@@ -30,10 +30,16 @@ import type {
 const HASHTAG_RE = /^[A-Za-z0-9_.]+$/;
 const SLUG_RE = /^[a-z0-9][a-z0-9-]{0,48}$/;
 
+/**
+ * Where the scraper is checked out.
+ *
+ * The two repositories are coupled by path rather than packaging, so this
+ * defaults to a sibling checkout — set SCRAPER_DIR if yours lives elsewhere.
+ */
 export function scraperDir(): string {
   return process.env.SCRAPER_DIR
     ? path.resolve(process.cwd(), process.env.SCRAPER_DIR)
-    : path.resolve(process.cwd(), "..", "scraper");
+    : path.resolve(process.cwd(), "..", "lead-gen-campaign-tally-scraper");
 }
 
 function businessesDir(): string {

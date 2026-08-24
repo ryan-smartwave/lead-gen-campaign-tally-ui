@@ -2,12 +2,18 @@
 
 Runs the campaign hashtag scraper from a browser for **any number of businesses**, shows what each one found, keeps a browsable history, and exports the lot as CSV.
 
-> **Paired repository:** this app drives `lead-gen-campaign-tally-scraper`, which is a
-> separate repo. Clone both, then point `SCRAPER_DIR` at the scraper's folder
-> (it defaults to `../scraper`, i.e. the two checked out side by side). The app
-> imports the scraper at runtime by path, so the scraper must be present and its
-> dependencies installed for scrapes to run; the read-only viewing screens work
-> without it.
+> **Paired repository:** this app drives `lead-gen-campaign-tally-scraper`, a
+> separate repo. Clone both side by side:
+>
+> ```
+> lead-gen-campaign-tally/
+>   lead-gen-campaign-tally-scraper/
+>   lead-gen-campaign-tally-ui/
+> ```
+>
+> That layout is the default; set `SCRAPER_DIR` if yours differs. The app imports
+> the scraper at runtime by path, so it must be present with its dependencies
+> installed for scrapes to run — the read-only viewing screens work without it.
 
 ## The shape of it
 
@@ -97,7 +103,7 @@ Then open http://localhost:3000.
 |---|---|
 | `SCRAPER_ENABLED=1` | This instance may run scrapes and edit businesses. **Do not set it on the hosted deployment** — its absence is what makes that copy read-only. |
 | `DATABASE_URL` | Neon connection string. Optional; without it the app reads local files only. |
-| `SCRAPER_DIR` | Path to the scraper. Defaults to `../scraper`. |
+| `SCRAPER_DIR` | Path to the scraper checkout. Defaults to `../lead-gen-campaign-tally-scraper`. |
 
 ## Downloading data
 
