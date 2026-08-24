@@ -1,66 +1,43 @@
-import { snapshot, subscribe } from "@/lib/runManager";
-import type { RunEvent } from "@/lib/types";
+import { eventsUrl } from "@/lib/scraperClient";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * Server-sent events for the live run.
+ * Proxies the scraper service's event stream.
  *
- * The keep-alive ping is not optional: gaps between hashtags are 3–7 minutes by
- * design, which exceeds common idle timeouts, and a dropped stream during a
- * deliberate silence looks exactly like a crashed run.
+ * Proxied rather than connected to directly so the browser only ever talks to
+ * this app's own origin: no cross-origin setup, and the service's address stays
+ * a server-side detail rather than something shipped to the client.
  */
 export async function GET(request: Request) {
   const since = Number(new URL(request.url).searchParams.get("sinceSeq") ?? 0);
-  const encoder = new TextEncoder();
 
-  const stream = new ReadableStream({
-    start(controller) {
-      let open = true;
-      const send = (chunk: string) => {
-        if (!open) return;
-        try {
-          controller.enqueue(encoder.encode(chunk));
-        } catch {
-          open = false;
-        }
-      };
+  let upstream: Response;
+  try {
+    upstream = await fetch(eventsUrl(since), {
+      headers: { Accept: "text/event-stream" },
+      // Must not be buffered or cached: the point is a live stream.
+      cache: "no-store",
+      signal: request.signal,
+    });
+  } catch {
+    // No service, no stream. Closing cleanly lets the client fall back to
+    // polling the snapshot rather than retrying a broken socket forever.
+    return new Response("event: bye\ndata: {}\n\n", {
+      status: 200,
+      headers: { "Content-Type": "text/event-stream; charset=utf-8", "Cache-Control": "no-store" },
+    });
+  }
 
-      const frame = (event: RunEvent) =>
-        send(`id: ${event.seq}\nevent: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`);
+  if (!upstream.ok || !upstream.body) {
+    return new Response("event: bye\ndata: {}\n\n", {
+      status: 200,
+      headers: { "Content-Type": "text/event-stream; charset=utf-8", "Cache-Control": "no-store" },
+    });
+  }
 
-      const snap = snapshot();
-      send(
-        `event: hello\ndata: ${JSON.stringify({
-          firstSeq: snap.firstSeq,
-          lastSeq: snap.lastSeq,
-          active: snap.active,
-        })}\n\n`,
-      );
-      for (const event of snap.events) {
-        if (event.seq > since) frame(event);
-      }
-
-      const unsubscribe = subscribe(frame);
-      const ping = setInterval(() => send(`: ping\n\n`), 20_000);
-
-      const close = () => {
-        open = false;
-        clearInterval(ping);
-        unsubscribe();
-        try {
-          controller.close();
-        } catch {
-          /* already closed */
-        }
-      };
-
-      request.signal.addEventListener("abort", close);
-    },
-  });
-
-  return new Response(stream, {
+  return new Response(upstream.body, {
     headers: {
       "Content-Type": "text/event-stream; charset=utf-8",
       "Cache-Control": "no-store, no-transform",

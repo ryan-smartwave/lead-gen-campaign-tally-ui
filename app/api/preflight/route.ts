@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
-import { isScraperHost, mcpEndpoint } from "@/lib/capability";
-import { probeMcp } from "@/lib/mcpProbe";
-import { activeBusiness, isRunning } from "@/lib/runManager";
-import { getDashboard, ranTodayForReal, resolveBusiness } from "@/lib/data";
+import * as scraper from "@/lib/scraperClient";
+import { resolveBusiness } from "@/lib/data";
 import { campaignDay } from "@/lib/format";
 import type { Check, Preflight } from "@/lib/types";
 
@@ -10,81 +8,81 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * The free checks only. This route never contacts Instagram or Facebook — the
- * session check costs real page visits and so lives behind its own explicit
- * action. Always answers 200: it reports failures rather than failing.
+ * Translates the scraper service's preflight into what the UI renders.
+ *
+ * Whether this device can run a scrape is simply whether the service is
+ * reachable — the service only exists on the machine with the signed-in Chrome.
+ * That makes capability an observed fact rather than a configuration flag.
+ *
+ * Always answers 200: this endpoint reports problems, it does not fail.
  */
 export async function GET(request: Request) {
-  const local = isScraperHost();
   const requested = new URL(request.url).searchParams.get("business") ?? undefined;
+
+  let service: scraper.ServicePreflight | null = null;
+  let unreachable: string | null = null;
+  try {
+    service = await scraper.preflight(requested);
+  } catch (err) {
+    unreachable = (err as Error).message;
+  }
+
   const business = await resolveBusiness(requested);
-  const today = campaignDay();
   const checks: Check[] = [];
 
-  if (local) {
-    const probe = await probeMcp(mcpEndpoint());
+  if (unreachable || !service) {
     checks.push({
       id: "mcp",
-      status: probe.reachable ? "pass" : "fail",
-      label: "Chrome connection",
-      detail: probe.reachable
-        ? `Bridge reachable — ${probe.detail}`
-        : `Cannot reach the bridge: ${probe.detail}`,
-      ...(probe.reachable ? {} : { remedy: "mcp_unreachable" as const }),
+      status: "fail",
+      label: "Scraper service",
+      detail: unreachable ?? "The scraper service did not answer.",
+      remedy: "mcp_unreachable",
     });
   } else {
+    const mcp = service.checks.mcp;
     checks.push({
       id: "mcp",
-      status: "not_checked",
+      status: mcp?.state === "ok" ? "pass" : "fail",
       label: "Chrome connection",
-      detail: "Not applicable on this device — scrapes run on the laptop.",
+      detail: mcp?.detail ?? "unknown",
+      ...(mcp?.state === "ok" ? {} : { remedy: "mcp_unreachable" as const }),
+    });
+
+    const db = service.checks.database;
+    if (db?.state !== "ok") {
+      checks.push({
+        id: "sessions",
+        status: "fail",
+        label: "Scraper database",
+        detail: db?.detail ?? "The scraper has no database configured.",
+      });
+    } else {
+      checks.push({
+        id: "sessions",
+        status: "not_checked",
+        label: "Instagram and Facebook sign-in",
+        detail:
+          "Not checked. Verifying this visits both sites for real, so it runs only when you ask.",
+      });
+    }
+
+    const today = service.checks.today;
+    checks.push({
+      id: "today",
+      status: today?.state === "warn" ? "warn" : "pass",
+      label: "Once per day",
+      detail: business
+        ? `${business.name}: ${today?.detail ?? "unknown"}`
+        : (today?.detail ?? `no run yet today (${campaignDay()})`),
     });
   }
 
-  checks.push({
-    id: "sessions",
-    status: "not_checked",
-    label: "Instagram and Facebook sign-in",
-    detail:
-      "Not checked. Verifying this visits both sites for real, so it runs only when you ask.",
-  });
-
-  const dashboard = business ? await getDashboard(business) : null;
-  // From local files, matching the guard that actually blocks the run — the
-  // warning shown must never disagree with what enforcement will do.
-  const ranToday = business ? await ranTodayForReal(business) : false;
-  checks.push({
-    id: "today",
-    status: ranToday ? "warn" : "pass",
-    label: "Once per day",
-    detail: !business
-      ? "No business configured yet."
-      : ranToday
-        ? `${business.name} was already scraped today (${today}). Running twice a day works against the anti-ban design.`
-        : `No scrape yet today (${today}) for ${business.name}.`,
-  });
-
-  const mcpOk = checks.find((c) => c.id === "mcp")?.status === "pass";
-  const running = isRunning();
-  const lastRun = dashboard?.latestRun ?? null;
-
-  const body: Preflight & { business: string | null; runningBusiness: string | null } = {
-    capability: local ? "local" : "hosted",
-    canRun: local && mcpOk && !running && Boolean(business?.hashtags.length),
+  const body: Preflight & { blockedBy: scraper.BlockedBy; serviceReachable: boolean } = {
+    capability: unreachable ? "hosted" : "local",
+    canRun: Boolean(service?.canRun),
+    blockedBy: service?.blockedBy ?? "config_invalid",
+    serviceReachable: !unreachable,
     checks,
-    business: business?.slug ?? null,
-    runningBusiness: activeBusiness(),
-    ...(running ? { activeRunId: "active" } : {}),
-    ...(lastRun
-      ? {
-          lastRun: {
-            id: lastRun.id,
-            day: lastRun.day,
-            status: lastRun.status,
-            startedAt: lastRun.startedAt,
-          },
-        }
-      : {}),
   };
 
   return NextResponse.json(body);

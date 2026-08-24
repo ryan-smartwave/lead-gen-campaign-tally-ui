@@ -1,8 +1,6 @@
-import { dataSource, getDashboard, getPosts, resolveBusiness } from "@/lib/data";
-import * as remote from "@/lib/dbStore";
+import { getAllPosts, getDashboard, resolveBusiness } from "@/lib/data";
 import { exportFilename, postsCsv, runsCsv, talliesCsv } from "@/lib/csv";
 import { campaignDay } from "@/lib/format";
-import type { Post } from "@/lib/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -26,22 +24,7 @@ export async function GET(request: Request) {
   let body: string;
 
   if (kind === "posts") {
-    let posts: Post[];
-    if (dataSource() === "database") {
-      posts = await remote.readAllPosts(business.slug);
-    } else {
-      // Locally, posts live in one file per hashtag.
-      const pairs = new Map(
-        data.rows.map((r) => [`${r.platform}:${r.hashtag}`, r] as const),
-      );
-      const groups = await Promise.all(
-        [...pairs.values()].map((r) =>
-          getPosts(business.slug, r.platform, r.hashtag, 100_000),
-        ),
-      );
-      posts = groups.flat();
-    }
-    body = postsCsv(posts);
+    body = postsCsv(await getAllPosts(business.slug));
   } else if (kind === "runs") {
     body = runsCsv(data.runs, data.rows);
   } else {

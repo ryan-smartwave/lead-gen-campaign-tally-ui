@@ -1,7 +1,7 @@
 {
-  "name": "campaign-tally-web",
-  "version": "0.1.0",
-  "description": "Web app to run the campaign hashtag scraper and visualize tallies across a campaign",
+  "name": "lead-gen-campaign-tally-ui",
+  "version": "0.3.0",
+  "description": "Web app that drives the campaign hashtag scraper service and visualizes tallies across a campaign. Reads from Postgres; controls runs over HTTP.",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -9,7 +9,6 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "db:migrate": "node scripts/migrate.mjs",
     "test": "node --test test/"
   },
   "dependencies": {
@@ -22,7 +21,6 @@
     "@types/node": "^26.2.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.5",
-    "pg": "^8.23.0",
     "typescript": "^7.0.2"
   }
 }

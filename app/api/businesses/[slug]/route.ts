@@ -1,21 +1,17 @@
 import { NextResponse } from "next/server";
-import { isScraperHost } from "@/lib/capability";
-import * as local from "@/lib/localStore";
-import { syncBusinesses } from "@/lib/sync";
-import { isDbConfigured } from "@/lib/db";
-import type { Target } from "@/lib/types";
+import * as scraper from "@/lib/scraperClient";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-function guard() {
-  if (isScraperHost()) return null;
+function fail(err: unknown) {
+  if (err instanceof scraper.ScraperUnavailableError) {
+    return NextResponse.json({ error: "service_unavailable", message: err.message }, { status: 503 });
+  }
+  const e = err as NodeJS.ErrnoException & { status?: number };
   return NextResponse.json(
-    {
-      error: "not_local",
-      message: "Businesses can only be edited on the machine that holds the scraper.",
-    },
-    { status: 403 },
+    { error: e.code ?? "invalid", message: e.message },
+    { status: e.status ?? 400 },
   );
 }
 
@@ -24,50 +20,35 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ slug: string }> },
 ) {
-  const blocked = guard();
-  if (blocked) return blocked;
-
   const { slug } = await params;
-  const existing = local.readBusiness(slug);
-  if (!existing) {
-    return NextResponse.json({ error: "not_found" }, { status: 404 });
-  }
-
   const body = await request.json().catch(() => ({}));
-  const name = typeof body?.name === "string" && body.name.trim() ? body.name.trim() : existing.name;
-  const hashtags: Target[] = Array.isArray(body?.hashtags) ? body.hashtags : existing.hashtags;
-
   try {
-    const saved = local.writeBusiness({ slug, name, hashtags });
-    if (isDbConfigured()) await syncBusinesses().catch(() => {});
-    return NextResponse.json({ business: saved });
+    const business = await scraper.updateBusiness(slug, {
+      ...(typeof body?.name === "string" ? { name: body.name } : {}),
+      ...(Array.isArray(body?.hashtags) ? { hashtags: body.hashtags } : {}),
+    });
+    return NextResponse.json({ business });
   } catch (err) {
-    return NextResponse.json(
-      { error: "invalid", message: (err as Error).message },
-      { status: 400 },
-    );
+    return fail(err);
   }
 }
 
 /**
- * Removes the business definition. Its collected data stays on disk, so this is
- * recoverable — re-creating the business with the same id picks the history back
- * up.
+ * Removes the definition. Collected results stay in the database, so
+ * re-creating the business with the same id picks its history back up.
  */
 export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ slug: string }> },
 ) {
-  const blocked = guard();
-  if (blocked) return blocked;
-
   const { slug } = await params;
-  if (!local.readBusiness(slug)) {
-    return NextResponse.json({ error: "not_found" }, { status: 404 });
+  try {
+    await scraper.deleteBusiness(slug);
+    return NextResponse.json({
+      deleted: slug,
+      note: "Collected results were left in place; re-creating this business with the same id restores its history.",
+    });
+  } catch (err) {
+    return fail(err);
   }
-  local.deleteBusiness(slug);
-  return NextResponse.json({
-    deleted: slug,
-    note: "Collected data was left on disk; re-creating this business with the same id restores its history.",
-  });
 }

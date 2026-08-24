@@ -1,5 +1,5 @@
 import { getBusinesses } from "@/lib/data";
-import { isScraperHost } from "@/lib/capability";
+import { canRunScrapes } from "@/lib/capability";
 import { isDbConfigured } from "@/lib/db";
 import { BusinessEditor } from "@/components/settings/BusinessEditor";
 import { NewBusiness } from "@/components/settings/NewBusiness";
@@ -9,8 +9,9 @@ export const revalidate = 0;
 export const metadata = { title: "Settings · Campaign Tally" };
 
 export default async function SettingsPage() {
-  const businesses = await getBusinesses();
-  const editable = isScraperHost();
+  // Editable exactly when the scraper service is reachable: it owns the config
+  // files, so without it there is nothing to write to.
+  const [businesses, editable] = await Promise.all([getBusinesses(), canRunScrapes()]);
 
   return (
     <>

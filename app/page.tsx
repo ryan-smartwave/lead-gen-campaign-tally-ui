@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getDashboard, resolveBusiness } from "@/lib/data";
 import { ExportButtons } from "@/components/data/ExportButtons";
-import { isScraperHost } from "@/lib/capability";
+import { canRunScrapes } from "@/lib/capability";
 import { dayLabel, num, runStamp } from "@/lib/format";
 import { StatTile } from "@/components/data/StatTile";
 import { HashtagTable } from "@/components/data/HashtagTable";
@@ -10,8 +10,6 @@ import { NewPostsBars } from "@/components/charts/NewPostsBars";
 import { CumulativeChart } from "@/components/charts/CumulativeChart";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { RunLauncher } from "@/components/run/RunLauncher";
-import { SyncButton } from "@/components/run/SyncButton";
-import { isDbConfigured } from "@/lib/db";
 
 // The local instance wants to see the row that just landed; a hosted read-only
 // instance should not wake the database on every glance.
@@ -23,8 +21,7 @@ export default async function DashboardPage({
   searchParams: Promise<{ b?: string }>;
 }) {
   const { b } = await searchParams;
-  const business = await resolveBusiness(b);
-  const local = isScraperHost();
+  const [business, local] = await Promise.all([resolveBusiness(b), canRunScrapes()]);
 
   if (!business) {
     return (
@@ -82,36 +79,13 @@ export default async function DashboardPage({
         <ExportButtons business={business.slug} hasPosts={d.distinctPosts > 0} />
       ) : null}
 
-      {/* Reads come from the database, so say so when this machine holds more
-          than the database does — otherwise a cleared database just looks like
-          lost data. Sits directly above the Sync button it refers to. */}
-      {d.unsyncedRuns ? (
-        <section
-          className="card"
-          style={{ borderLeft: "3px solid var(--warn)", background: "var(--warn-bg)" }}
-        >
-          <span className="card-title">
-            {d.unsyncedRuns} scrape{d.unsyncedRuns === 1 ? "" : "s"} not in the database
-          </span>
-          <p style={{ fontSize: 13 }}>
-            These screens read the database, and this machine has{" "}
-            {d.unsyncedRuns === 1 ? "a scrape" : "scrapes"} the database doesn&rsquo;t. Nothing is
-            lost — the scraper&rsquo;s own files still hold it. Use <strong>Sync to database</strong>{" "}
-            below to push it up.
-          </p>
-        </section>
-      ) : null}
-
-      {/* Also shown when the database is empty but this machine has data to push,
-          which is exactly when the button is most needed. */}
-      {local && (d.runs.length > 0 || (d.unsyncedRuns ?? 0) > 0) ? (
-        <SyncButton dbConfigured={isDbConfigured()} />
-      ) : null}
+      {/* No sync notice any more: the scraper writes results to the database as
+          it goes, so there is no second copy that could be ahead of it. */}
 
       {d.runs.length === 0 ? (
         <EmptyState
           glyph="◌"
-          headline={d.source === "database" ? "Nothing in the database yet" : "No scrapes yet"}
+          headline="No scrapes recorded yet"
           hint={
             local
               ? "A run visits each hashtag in turn with long random gaps between them, so it takes 30–60 minutes. Results are written to the database as the run goes."

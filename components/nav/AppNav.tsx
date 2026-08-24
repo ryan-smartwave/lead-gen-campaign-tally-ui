@@ -1,12 +1,12 @@
 import { Suspense } from "react";
 import { ThemeToggle } from "./ThemeToggle";
 import { NavInner } from "./NavInner";
-import { isScraperHost } from "@/lib/capability";
+import { canRunScrapes } from "@/lib/capability";
 import { getBusinesses } from "@/lib/data";
 import styles from "./AppNav.module.css";
 
 export async function AppNav() {
-  const businesses = await getBusinesses();
+  const [businesses, local] = await Promise.all([getBusinesses(), canRunScrapes()]);
 
   return (
     <header className={styles.bar}>
@@ -15,7 +15,7 @@ export async function AppNav() {
           <NavInner businesses={businesses} />
         </Suspense>
         <div className={styles.trailing}>
-          {!isScraperHost() ? (
+          {!local ? (
             <span
               className={`pill ${styles.readonly}`}
               title="Viewing only — scrapes run on the laptop where Chrome is signed in"
