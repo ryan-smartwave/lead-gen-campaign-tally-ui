@@ -8,7 +8,8 @@
  * always shows what the next run will really do.
  */
 
-type SafetyValues = Record<string, number | number[]>;
+type SafetyValue = number | number[] | boolean;
+type SafetyValues = Record<string, SafetyValue>;
 
 const minutes = (ms: number) =>
   ms % 60_000 === 0 ? `${ms / 60_000} min` : `${Math.round(ms / 6_000) / 10} min`;
@@ -19,7 +20,7 @@ const spanMin = ([a, b]: number[]) => `${minutes(a)}–${minutes(b)}`;
 /** Label + human formatting per limit; unknown keys fall back to raw values. */
 const SPEC: Record<
   string,
-  { label: string; note: string; format: (v: number | number[]) => string }
+  { label: string; note: string; format: (v: SafetyValue) => string }
 > = {
   maxHashtagsPerRun: {
     label: "Hashtags per run",
@@ -60,6 +61,21 @@ const SPEC: Record<
     label: "Page-load wait",
     note: "before the page is trusted to have settled",
     format: (v) => seconds(v as number),
+  },
+  maxPostVisitsPerRun: {
+    label: "Post visits per run",
+    note: "capped extra page opens to fill in likes, captions and dates",
+    format: (v) => String(v),
+  },
+  pipelineTabs: {
+    label: "Tab pipelining",
+    note: "pre-loads the next hashtag during the gap — one tab active at a time",
+    format: (v) => (v ? "on" : "off"),
+  },
+  journalRetentionDays: {
+    label: "Forensic journal kept",
+    note: "per-run action log, for diagnosing any block",
+    format: (v) => `${v} days`,
   },
 };
 
