@@ -190,8 +190,6 @@ export type RunEvent =
       type: "waiting";
       seconds: number;
       next: Target | null;
-      /** Present on the randomized delay before the first page visit (ANTIBAN §6). */
-      reason?: "start_jitter";
     })
   | (EventBase & {
       type: "danger";

@@ -52,11 +52,6 @@ const SPEC: Record<
     note: "the long waits that keep the account safe",
     format: (v) => spanMin(v as number[]),
   },
-  startJitterMs: {
-    label: "Randomized start delay",
-    note: "so daily runs never share a clock rhythm",
-    format: (v) => spanMin(v as number[]),
-  },
   pageLoadDelayMs: {
     label: "Page-load wait",
     note: "before the page is trusted to have settled",
