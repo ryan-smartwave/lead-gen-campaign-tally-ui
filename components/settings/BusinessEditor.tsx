@@ -24,6 +24,9 @@ export function BusinessEditor({
   const [hashtags, setHashtags] = useState<Target[]>(business.hashtags);
   const [platform, setPlatform] = useState<Platform>("instagram");
   const [draft, setDraft] = useState("");
+  // A native date input works in "" (empty) terms; the stored field is null.
+  const [campaignStart, setCampaignStart] = useState(business.campaignStart ?? "");
+  const [campaignEnd, setCampaignEnd] = useState(business.campaignEnd ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -31,7 +34,9 @@ export function BusinessEditor({
 
   const dirty =
     name !== business.name ||
-    JSON.stringify(hashtags) !== JSON.stringify(business.hashtags);
+    JSON.stringify(hashtags) !== JSON.stringify(business.hashtags) ||
+    (campaignStart || null) !== business.campaignStart ||
+    (campaignEnd || null) !== business.campaignEnd;
 
   function addHashtag() {
     // Accept a pasted "#tag" or a full URL and keep just the tag.
@@ -58,7 +63,12 @@ export function BusinessEditor({
       const res = await fetch(`/api/businesses/${encodeURIComponent(business.slug)}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, hashtags }),
+        body: JSON.stringify({
+          name,
+          hashtags,
+          campaignStart: campaignStart || null,
+          campaignEnd: campaignEnd || null,
+        }),
       });
       const body = await res.json();
       if (!res.ok) {
@@ -106,6 +116,42 @@ export function BusinessEditor({
             onChange={(e) => setName(e.target.value)}
           />
         </label>
+      ) : null}
+
+      {editable ? (
+        <div className="stack gap-1">
+          <span className="label">Campaign window (optional)</span>
+          <div className="row gap-2">
+            <label className="stack gap-1">
+              <span className="muted text-xs">Start</span>
+              <input
+                type="date"
+                className="input input-sm"
+                value={campaignStart}
+                max={campaignEnd || undefined}
+                onChange={(e) => setCampaignStart(e.target.value)}
+              />
+            </label>
+            <label className="stack gap-1">
+              <span className="muted text-xs">End</span>
+              <input
+                type="date"
+                className="input input-sm"
+                value={campaignEnd}
+                min={campaignStart || undefined}
+                onChange={(e) => setCampaignEnd(e.target.value)}
+              />
+            </label>
+          </div>
+          <p className="muted text-xs">
+            When set, the dashboard counts a post as “in-campaign” only if it was posted inside this
+            window. Posts of unknown age still count. Leave blank to count every new post.
+          </p>
+        </div>
+      ) : business.campaignStart || business.campaignEnd ? (
+        <p className="muted text-[13px]">
+          Campaign window: {business.campaignStart ?? "open"} → {business.campaignEnd ?? "open"}
+        </p>
       ) : null}
 
       <div className="stack gap-2">
