@@ -48,6 +48,9 @@ export default async function DashboardPage({
 
   const latestRows = d.latestRun ? d.rows.filter((r) => r.runId === d.latestRun!.id) : [];
   const latestNew = latestRows.reduce((sum, r) => sum + r.newPosts, 0);
+  const latestFresh = latestRows.reduce((sum, r) => sum + r.freshPosts, 0);
+  // Only meaningful once a campaign window is set — otherwise fresh == new.
+  const hasCampaignWindow = Boolean(business.campaignStart || business.campaignEnd);
 
   return (
     <>
@@ -76,6 +79,7 @@ export default async function DashboardPage({
 
       <RunLauncher
         canRun={local && business.hashtags.length > 0}
+        local={local}
         ranToday={d.ranToday}
         business={business.slug}
         hashtagCount={business.hashtags.length}
@@ -99,6 +103,14 @@ export default async function DashboardPage({
           <section className="tiles">
             <StatTile label="Unique posts" value={d.distinctPosts} accent="var(--color-accent)" />
             <StatTile label="Found last run" value={latestNew} />
+            {hasCampaignWindow ? (
+              <StatTile
+                label="In-campaign last run"
+                value={latestFresh}
+                accent="var(--color-ok)"
+                qualifier="within the campaign window"
+              />
+            ) : null}
             <StatTile
               label="Instagram"
               value={d.tallied.instagram}

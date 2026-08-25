@@ -11,11 +11,14 @@ import { PreflightPanel, BridgeRemedy } from "./PreflightPanel";
 /** Owns the whole run lifecycle: preflight, the button, and live progress. */
 export function RunLauncher({
   canRun,
+  local = false,
   ranToday,
   business,
   hashtagCount,
 }: {
   canRun: boolean;
+  /** True when the scraper service is reachable from here (same machine). */
+  local?: boolean;
   ranToday: boolean;
   business: string;
   hashtagCount: number;
@@ -105,7 +108,12 @@ export function RunLauncher({
   if (state) {
     return (
       <>
-        <RunProgress state={state} connected={connected} onStop={running ? stopRun : undefined} />
+        <RunProgress
+          state={state}
+          connected={connected}
+          local={local}
+          onStop={running ? stopRun : undefined}
+        />
         {!running ? (
           <div className="row">
             <button type="button" className="btn" onClick={() => void dismiss()} disabled={busy}>

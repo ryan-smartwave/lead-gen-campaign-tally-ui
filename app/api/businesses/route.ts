@@ -26,6 +26,10 @@ export async function POST(request: Request) {
     const business = await scraper.createBusiness(
       typeof body?.name === "string" ? body.name : "",
       Array.isArray(body?.hashtags) ? body.hashtags : [],
+      {
+        ...(body?.campaignStart !== undefined ? { campaignStart: body.campaignStart } : {}),
+        ...(body?.campaignEnd !== undefined ? { campaignEnd: body.campaignEnd } : {}),
+      },
     );
     return NextResponse.json({ business });
   } catch (err) {

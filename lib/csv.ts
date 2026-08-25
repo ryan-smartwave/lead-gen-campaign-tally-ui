@@ -35,6 +35,7 @@ export function talliesCsv(rows: TallyRow[], runs: Run[]): string {
       "hashtag",
       "posts_on_page",
       "new_posts",
+      "fresh_posts",
       "cumulative_unique",
       "status",
     ],
@@ -46,6 +47,7 @@ export function talliesCsv(rows: TallyRow[], runs: Run[]): string {
       r.hashtag,
       r.postsOnPage,
       r.newPosts,
+      r.freshPosts,
       r.cumulativeUnique,
       r.status,
     ]),
@@ -54,7 +56,20 @@ export function talliesCsv(rows: TallyRow[], runs: Run[]): string {
 
 export function postsCsv(posts: Post[]): string {
   return toCsv(
-    ["platform", "hashtag", "post_id", "first_seen_at", "url", "author", "text"],
+    [
+      "platform",
+      "hashtag",
+      "post_id",
+      "first_seen_at",
+      "url",
+      "author",
+      "username",
+      "text",
+      "image_url",
+      "like_count",
+      "comment_count",
+      "taken_at",
+    ],
     posts.map((p) => [
       p.platform,
       p.hashtag,
@@ -62,7 +77,13 @@ export function postsCsv(posts: Post[]): string {
       p.firstSeenAt,
       p.platform === "instagram" ? p.url : "",
       p.platform === "facebook" ? p.author : "",
-      p.platform === "instagram" ? p.preview : p.text,
+      p.platform === "instagram" ? p.username : "",
+      // Prefer the real caption over the alt-text preview for Instagram.
+      p.platform === "instagram" ? (p.caption ?? p.preview) : p.text,
+      p.platform === "instagram" ? p.imageUrl : "",
+      p.platform === "instagram" ? p.likeCount : "",
+      p.platform === "instagram" ? p.commentCount : "",
+      p.platform === "instagram" ? p.takenAt : "",
     ]),
   );
 }

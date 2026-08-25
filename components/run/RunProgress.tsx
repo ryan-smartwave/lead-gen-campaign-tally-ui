@@ -12,10 +12,13 @@ import { GapCountdown } from "./GapCountdown";
 export function RunProgress({
   state,
   connected,
+  local = false,
   onStop,
 }: {
   state: RunViewState;
   connected: boolean;
+  /** Only on the machine running the scraper is the incident path openable. */
+  local?: boolean;
   onStop?: () => void;
 }) {
   const [, tick] = useState(0);
@@ -82,6 +85,13 @@ export function RunProgress({
             <span className="muted text-xs">
               Stopped while visiting #{state.danger.hashtag}
               {state.danger.url ? ` (${state.danger.url})` : ""}
+            </span>
+          ) : null}
+          {local && state.danger.incidentDir ? (
+            <span className="muted text-xs">
+              Incident saved for review:{" "}
+              <span className="mono">{state.danger.incidentDir}</span> (screenshot, page text, and
+              the actions leading up to it)
             </span>
           ) : null}
           <span className="text-[13px] font-semibold">{DANGER_REMEDY}</span>

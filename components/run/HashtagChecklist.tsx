@@ -56,7 +56,11 @@ export function HashtagChecklist({ state }: { state: RunViewState }) {
             </span>
             <span className="muted num ml-auto text-right text-[13px]">
               {progress.state === "done" || progress.state === "empty"
-                ? `${num(progress.postsOnPage ?? 0)} on page · +${num(progress.newCount ?? 0)} new · ${num(progress.cumulative ?? 0)} total`
+                ? `${num(progress.postsOnPage ?? 0)} on page · +${num(progress.newCount ?? 0)} new${
+                    progress.freshCount !== undefined && progress.freshCount !== progress.newCount
+                      ? ` (${num(progress.freshCount)} in-campaign)`
+                      : ""
+                  } · ${num(progress.cumulative ?? 0)} total`
                 : progress.state === "active"
                   ? "loading and scrolling…"
                   : progress.state === "error"
