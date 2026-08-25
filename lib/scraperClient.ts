@@ -93,6 +93,8 @@ interface RawBusiness {
   name: string;
   createdAt: string | null;
   hashtags: { platform: Platform; value: string }[];
+  campaignStart?: string | null;
+  campaignEnd?: string | null;
 }
 
 /** The service speaks the config file's `value`; the app uses `hashtag`. */
@@ -102,6 +104,8 @@ function toBusiness(raw: RawBusiness): Business {
     name: raw.name,
     createdAt: raw.createdAt,
     hashtags: (raw.hashtags ?? []).map((h) => ({ platform: h.platform, hashtag: h.value })),
+    campaignStart: raw.campaignStart ?? null,
+    campaignEnd: raw.campaignEnd ?? null,
   };
 }
 
@@ -114,23 +118,39 @@ export async function listBusinesses(): Promise<Business[]> {
   return (body.businesses ?? []).map(toBusiness);
 }
 
-export async function createBusiness(name: string, hashtags: Target[] = []): Promise<Business> {
+export async function createBusiness(
+  name: string,
+  hashtags: Target[] = [],
+  dates: { campaignStart?: string | null; campaignEnd?: string | null } = {},
+): Promise<Business> {
   const body = await request<{ business: RawBusiness }>("/businesses", {
     method: "POST",
-    body: JSON.stringify({ name, hashtags: toServiceHashtags(hashtags) }),
+    body: JSON.stringify({
+      name,
+      hashtags: toServiceHashtags(hashtags),
+      ...(dates.campaignStart !== undefined ? { campaignStart: dates.campaignStart } : {}),
+      ...(dates.campaignEnd !== undefined ? { campaignEnd: dates.campaignEnd } : {}),
+    }),
   });
   return toBusiness(body.business);
 }
 
 export async function updateBusiness(
   slug: string,
-  patch: { name?: string; hashtags?: Target[] },
+  patch: {
+    name?: string;
+    hashtags?: Target[];
+    campaignStart?: string | null;
+    campaignEnd?: string | null;
+  },
 ): Promise<Business> {
   const body = await request<{ business: RawBusiness }>(`/businesses/${encodeURIComponent(slug)}`, {
     method: "PATCH",
     body: JSON.stringify({
       ...(patch.name !== undefined ? { name: patch.name } : {}),
       ...(patch.hashtags !== undefined ? { hashtags: toServiceHashtags(patch.hashtags) } : {}),
+      ...(patch.campaignStart !== undefined ? { campaignStart: patch.campaignStart } : {}),
+      ...(patch.campaignEnd !== undefined ? { campaignEnd: patch.campaignEnd } : {}),
     }),
   });
   return toBusiness(body.business);
@@ -160,7 +180,7 @@ export interface ServicePreflight {
   business: { slug: string; name: string; hashtags: { platform: Platform; value: string }[] } | null;
   businesses: { slug: string; name: string; hashtags: number }[];
   checks: Record<string, { state: string; detail: string; hint?: string | null }>;
-  safety?: Record<string, number | number[]>;
+  safety?: Record<string, number | number[] | boolean>;
 }
 
 export async function preflight(business?: string): Promise<ServicePreflight> {

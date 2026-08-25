@@ -26,6 +26,8 @@ export async function PATCH(
     const business = await scraper.updateBusiness(slug, {
       ...(typeof body?.name === "string" ? { name: body.name } : {}),
       ...(Array.isArray(body?.hashtags) ? { hashtags: body.hashtags } : {}),
+      ...(body?.campaignStart !== undefined ? { campaignStart: body.campaignStart } : {}),
+      ...(body?.campaignEnd !== undefined ? { campaignEnd: body.campaignEnd } : {}),
     });
     return NextResponse.json({ business });
   } catch (err) {

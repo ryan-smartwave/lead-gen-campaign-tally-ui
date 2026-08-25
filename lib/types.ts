@@ -24,6 +24,13 @@ export interface Business {
   name: string;
   createdAt: string | null;
   hashtags: Target[];
+  /**
+   * Optional campaign window (YYYY-MM-DD). When set, a post counts as "fresh"
+   * only if it was posted inside it; posts of unknown age still count. Null
+   * means no window — every new post is fresh.
+   */
+  campaignStart: string | null;
+  campaignEnd: string | null;
 }
 
 export interface Run {
@@ -53,6 +60,12 @@ export interface TallyRow {
    */
   postsOnPage: number | null;
   newPosts: number;
+  /**
+   * New posts that also fall inside the business's campaign window. Equals
+   * newPosts when no window is configured. Older rows (before this column
+   * existed) report 0.
+   */
+  freshPosts: number;
   cumulativeUnique: number;
   status: TallyStatus;
 }
@@ -69,6 +82,17 @@ export interface InstagramPost {
   url: string;
   /** Image alt text, which in practice holds the caption. Often null. */
   preview: string | null;
+  /** Rich fields captured from Instagram's own responses; null until enriched. */
+  username: string | null;
+  /** The real caption text (preferred over `preview` when present). */
+  caption: string | null;
+  imageUrl: string | null;
+  likeCount: number | null;
+  commentCount: number | null;
+  /** When the post was published, ISO. Drives campaign-window freshness. */
+  takenAt: string | null;
+  /** When a post-page visit filled in missing fields, ISO; null if never. */
+  enrichedAt: string | null;
   firstSeenAt: string;
   firstSeenRunId: string | null;
   hashtag: string;
@@ -151,6 +175,8 @@ export type RunEvent =
       hashtag: string;
       postsOnPage: number;
       newCount: number;
+      /** New posts also inside the campaign window; may be absent on old streams. */
+      freshCount?: number;
       cumulative: number;
       status: "ok" | "empty";
     })
@@ -172,6 +198,8 @@ export type RunEvent =
       reason: DangerReason;
       url: string | null;
       hashtag: string | null;
+      /** Path to the forensic incident bundle on the scraper's machine. */
+      incidentDir?: string | null;
     })
   | (EventBase & {
       type: "run_finished";
@@ -193,7 +221,12 @@ export interface RunViewState {
   /** Absolute epoch ms the current inter-hashtag gap ends, for a local countdown. */
   waitUntil: number | null;
   waitingNext: Target | null;
-  danger: { reason: DangerReason; url: string | null; hashtag: string | null } | null;
+  danger: {
+    reason: DangerReason;
+    url: string | null;
+    hashtag: string | null;
+    incidentDir: string | null;
+  } | null;
   abortReason: string | null;
 }
 
@@ -209,6 +242,7 @@ export interface TargetProgress {
   state: TargetProgressState;
   postsOnPage?: number;
   newCount?: number;
+  freshCount?: number;
   cumulative?: number;
   message?: string;
 }

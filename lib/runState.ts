@@ -65,6 +65,7 @@ export function reduceRunEvent(state: RunViewState, event: RunEvent): RunViewSta
         state: event.status === "empty" ? "empty" : "done",
         postsOnPage: event.postsOnPage,
         newCount: event.newCount,
+        freshCount: event.freshCount ?? event.newCount,
         cumulative: event.cumulative,
       };
       break;
@@ -83,7 +84,12 @@ export function reduceRunEvent(state: RunViewState, event: RunEvent): RunViewSta
     }
 
     case "danger": {
-      next.danger = { reason: event.reason, url: event.url, hashtag: event.hashtag };
+      next.danger = {
+        reason: event.reason,
+        url: event.url,
+        hashtag: event.hashtag,
+        incidentDir: event.incidentDir ?? null,
+      };
       next.waitUntil = null;
       next.waitingNext = null;
       break;
