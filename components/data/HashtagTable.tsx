@@ -47,7 +47,18 @@ export function HashtagTable({
                   </span>
                 </td>
                 <td className="right font-semibold">{num(lastCumulative(s))}</td>
-                <td className="right muted">{row ? delta(row.newPosts) : "—"}</td>
+                <td className="right muted">
+                  {row ? (
+                    <>
+                      {delta(row.newPosts)}
+                      {row.freshPosts !== row.newPosts ? (
+                        <span className="muted text-xs"> ({num(row.freshPosts)} in-campaign)</span>
+                      ) : null}
+                    </>
+                  ) : (
+                    "—"
+                  )}
+                </td>
                 <td>
                   <Sparkline
                     values={s.points.map((p) => p.cumulative)}

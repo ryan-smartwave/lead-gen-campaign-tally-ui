@@ -1,8 +1,10 @@
 import type { Platform, Post } from "@/lib/types";
 import { extractMentions, isRedacted } from "@/lib/caption";
+import { num } from "@/lib/format";
 import { PlatformIcon } from "@/components/data/PlatformIcon";
 import { Caption } from "./Caption";
 import { MentionChips } from "./MentionChips";
+import { PostThumb } from "./PostThumb";
 
 /**
  * One collapsible section per hashtag. Collapsed by default so a run with 500
@@ -60,26 +62,47 @@ export function PostGroup({
               }}
             >
               {post.platform === "instagram" ? (
-                <>
-                  {post.preview ? (
-                    <>
-                      <Caption text={post.preview} />
-                      <MentionChips handles={extractMentions(post.preview)} />
-                    </>
-                  ) : (
-                    <p className="muted" style={{ fontSize: 13 }}>
-                      (no caption captured)
-                    </p>
-                  )}
-                  <a
-                    href={post.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ fontSize: 12, fontWeight: 600 }}
-                  >
-                    Open on Instagram ↗
-                  </a>
-                </>
+                (() => {
+                  // The real caption when we captured it, else the alt-text preview.
+                  const captionText = post.caption ?? post.preview;
+                  return (
+                    <div className="row items-start gap-3">
+                      {post.imageUrl ? (
+                        <PostThumb src={post.imageUrl} alt={captionText ?? "Instagram post"} />
+                      ) : null}
+                      <div className="stack min-w-0 flex-1" style={{ gap: 6 }}>
+                        {post.username ? (
+                          <span style={{ fontSize: 13, fontWeight: 600 }}>@{post.username}</span>
+                        ) : null}
+                        {captionText ? (
+                          <>
+                            <Caption text={captionText} />
+                            <MentionChips handles={extractMentions(captionText)} />
+                          </>
+                        ) : (
+                          <p className="muted" style={{ fontSize: 13 }}>
+                            (no caption captured)
+                          </p>
+                        )}
+                        {post.likeCount !== null || post.commentCount !== null ? (
+                          <span className="muted num" style={{ fontSize: 12 }}>
+                            {post.likeCount !== null ? `${num(post.likeCount)} likes` : null}
+                            {post.likeCount !== null && post.commentCount !== null ? " · " : null}
+                            {post.commentCount !== null ? `${num(post.commentCount)} comments` : null}
+                          </span>
+                        ) : null}
+                        <a
+                          href={post.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ fontSize: 12, fontWeight: 600 }}
+                        >
+                          Open on Instagram ↗
+                        </a>
+                      </div>
+                    </div>
+                  );
+                })()
               ) : (
                 <>
                   <span style={{ fontSize: 13, fontWeight: 600 }}>

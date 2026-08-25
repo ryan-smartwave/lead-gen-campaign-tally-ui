@@ -85,7 +85,12 @@ export default async function RunDetailPage({
                       <span className="font-semibold">#{row.hashtag}</span>
                     </span>
                   </td>
-                  <td className="right num">+{num(row.newPosts)}</td>
+                  <td className="right num">
+                    +{num(row.newPosts)}
+                    {row.freshPosts !== row.newPosts ? (
+                      <span className="muted text-xs"> ({num(row.freshPosts)} in-campaign)</span>
+                    ) : null}
+                  </td>
                   <td className="right num">{num(row.cumulativeUnique)}</td>
                   <td>
                     <StatusPill status={row.status} />
