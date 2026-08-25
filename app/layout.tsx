@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
+import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { AppNav } from "@/components/nav/AppNav";
+
+// Body face and display face; exposed as variables the design system's
+// @theme block resolves through (--font-sans / --font-display).
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space" });
 
 export const metadata: Metadata = {
   title: "Campaign Tally",
@@ -16,7 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     // below deliberately sets data-theme on this element before React hydrates,
     // so the client always has an attribute the server did not render. Without
     // it React reports a mismatch on every load. Scoped to <html> only.
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${spaceGrotesk.variable}`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>

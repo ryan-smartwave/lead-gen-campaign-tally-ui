@@ -8,23 +8,21 @@ export function ExportButtons({ business, hasPosts }: { business: string; hasPos
 
   return (
     <section className="card">
-      <div className="row" style={{ justifyContent: "space-between" }}>
-        <span className="card-title">Download</span>
-        <span className="row" style={{ gap: "var(--space-2)" }}>
-          <a className="btn btn-sm" href={href("tallies")} download>
-            Daily tallies
+      <span className="card-title">Download</span>
+      <div className="row gap-2">
+        <a className="btn btn-sm no-underline" href={href("tallies")} download>
+          ↓ Daily tallies
+        </a>
+        <a className="btn btn-sm no-underline" href={href("runs")} download>
+          ↓ Scrape summary
+        </a>
+        {hasPosts ? (
+          <a className="btn btn-sm no-underline" href={href("posts")} download>
+            ↓ Posts with captions
           </a>
-          <a className="btn btn-sm" href={href("runs")} download>
-            Scrape summary
-          </a>
-          {hasPosts ? (
-            <a className="btn btn-sm" href={href("posts")} download>
-              Posts with captions
-            </a>
-          ) : null}
-        </span>
+        ) : null}
       </div>
-      <p className="muted" style={{ fontSize: 12 }}>
+      <p className="muted text-xs">
         CSV, properly quoted for captions that contain commas or line breaks, and UTF-8 so emoji
         survive Excel.
       </p>

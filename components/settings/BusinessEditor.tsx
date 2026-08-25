@@ -87,46 +87,41 @@ export function BusinessEditor({
 
   return (
     <section className="card">
-      <div className="row" style={{ justifyContent: "space-between" }}>
+      <div className="row justify-between">
         <span className="card-title">{business.name}</span>
-        <span className="muted mono" style={{ fontSize: 12 }}>
-          {business.slug}
+        <span className="row gap-2">
+          <span className="muted mono text-xs">{business.slug}</span>
+          <a href={`/?b=${encodeURIComponent(business.slug)}`} className="text-[13px] font-semibold">
+            View dashboard →
+          </a>
         </span>
       </div>
 
       {editable ? (
-        <label className="stack" style={{ gap: 4 }}>
+        <label className="stack gap-1">
           <span className="label">Name</span>
           <input
-            className="btn"
-            style={{ justifyContent: "flex-start", cursor: "text", width: "min(340px, 100%)" }}
+            className="input w-[min(340px,100%)]"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
         </label>
       ) : null}
 
-      <div className="stack" style={{ gap: "var(--space-2)" }}>
+      <div className="stack gap-2">
         <span className="label">Hashtags ({hashtags.length})</span>
         {hashtags.length === 0 ? (
-          <p className="muted" style={{ fontSize: 13 }}>
-            None yet. A scrape needs at least one.
-          </p>
+          <p className="muted text-[13px]">None yet. A scrape needs at least one.</p>
         ) : (
-          <ul className="stack" style={{ listStyle: "none", padding: 0, gap: 6 }}>
+          <ul className="m-0 flex list-none flex-col p-0">
             {hashtags.map((h, i) => (
-              <li
-                key={`${h.platform}:${h.hashtag}`}
-                className="row"
-                style={{ gap: "var(--space-2)", flexWrap: "nowrap" }}
-              >
+              <li key={`${h.platform}:${h.hashtag}`} className="list-row flex-nowrap gap-2">
                 <PlatformIcon platform={h.platform} />
-                <span style={{ fontWeight: 600 }}>#{h.hashtag}</span>
+                <span className="font-semibold">#{h.hashtag}</span>
                 {editable ? (
                   <button
                     type="button"
-                    className="btn btn-sm"
-                    style={{ marginLeft: "auto" }}
+                    className="btn btn-sm ml-auto"
                     onClick={() => setHashtags(hashtags.filter((_, j) => j !== i))}
                   >
                     Remove
@@ -140,9 +135,9 @@ export function BusinessEditor({
 
       {editable ? (
         <>
-          <div className="row" style={{ gap: "var(--space-2)" }}>
+          <div className="row gap-2">
             <select
-              className="btn btn-sm"
+              className="select"
               value={platform}
               onChange={(e) => setPlatform(e.target.value as Platform)}
             >
@@ -150,8 +145,7 @@ export function BusinessEditor({
               <option value="facebook">Facebook</option>
             </select>
             <input
-              className="btn btn-sm"
-              style={{ justifyContent: "flex-start", cursor: "text", flex: 1, minWidth: 140 }}
+              className="input input-sm min-w-[140px] flex-1"
               placeholder="hashtag, without the #"
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
@@ -168,15 +162,13 @@ export function BusinessEditor({
           </div>
 
           {error ? (
-            <p role="alert" style={{ color: "var(--danger)", fontSize: 13 }}>
+            <p role="alert" className="text-[13px] text-danger">
               {error}
             </p>
           ) : null}
-          {saved && !dirty ? (
-            <p style={{ color: "var(--ok)", fontSize: 13 }}>Saved.</p>
-          ) : null}
+          {saved && !dirty ? <p className="text-[13px] text-ok">Saved.</p> : null}
 
-          <div className="row" style={{ justifyContent: "space-between" }}>
+          <div className="row justify-between">
             <button
               type="button"
               className="btn btn-primary"
@@ -187,24 +179,17 @@ export function BusinessEditor({
             </button>
 
             {confirmDelete ? (
-              <span className="row" style={{ gap: "var(--space-2)" }}>
-                <span className="muted" style={{ fontSize: 12 }}>
-                  Scraped data is kept.
-                </span>
+              <span className="row gap-2">
+                <span className="muted text-xs">Scraped data is kept.</span>
                 <button
                   type="button"
-                  className="btn btn-sm"
-                  style={{ borderColor: "var(--danger)", color: "var(--danger)" }}
+                  className="btn btn-sm btn-danger"
                   onClick={() => void remove()}
                   disabled={busy}
                 >
                   Really remove
                 </button>
-                <button
-                  type="button"
-                  className="btn btn-sm"
-                  onClick={() => setConfirmDelete(false)}
-                >
+                <button type="button" className="btn btn-sm" onClick={() => setConfirmDelete(false)}>
                   Cancel
                 </button>
               </span>
@@ -221,7 +206,7 @@ export function BusinessEditor({
           </div>
         </>
       ) : (
-        <p className="muted" style={{ fontSize: 13 }}>
+        <p className="muted text-[13px]">
           Read-only here. Businesses and hashtags are edited on the machine that runs the scraper.
         </p>
       )}

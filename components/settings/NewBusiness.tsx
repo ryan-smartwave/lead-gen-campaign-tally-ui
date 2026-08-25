@@ -37,14 +37,13 @@ export function NewBusiness() {
   return (
     <section className="card">
       <span className="card-title">Add a business</span>
-      <p className="muted" style={{ fontSize: 13 }}>
+      <p className="muted text-[13px]">
         Each business keeps its own hashtags, history, and duplicate-tracking, so their numbers
         never mix. They share the browser connection, so only one can be scraping at a time.
       </p>
-      <div className="row" style={{ gap: "var(--space-2)" }}>
+      <div className="row gap-2">
         <input
-          className="btn"
-          style={{ justifyContent: "flex-start", cursor: "text", flex: 1, minWidth: 180 }}
+          className="input min-w-[180px] flex-1"
           placeholder="e.g. Bloom Wedding Planning"
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -65,7 +64,7 @@ export function NewBusiness() {
         </button>
       </div>
       {error ? (
-        <p role="alert" style={{ color: "var(--danger)", fontSize: 13 }}>
+        <p role="alert" className="text-[13px] text-danger">
           {error}
         </p>
       ) : null}

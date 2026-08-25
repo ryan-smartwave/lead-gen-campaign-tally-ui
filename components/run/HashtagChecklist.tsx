@@ -13,12 +13,12 @@ const GLYPH: Record<TargetProgressState, string> = {
 };
 
 const COLOR: Record<TargetProgressState, string> = {
-  pending: "var(--ink-soft)",
-  active: "var(--accent)",
-  done: "var(--ok)",
-  empty: "var(--warn)",
-  error: "var(--danger)",
-  never_visited: "var(--ink-soft)",
+  pending: "var(--color-ink-soft)",
+  active: "var(--color-accent)",
+  done: "var(--color-ok)",
+  empty: "var(--color-warn)",
+  error: "var(--color-danger)",
+  never_visited: "var(--color-ink-soft)",
 };
 
 /**
@@ -28,32 +28,33 @@ const COLOR: Record<TargetProgressState, string> = {
  */
 export function HashtagChecklist({ state }: { state: RunViewState }) {
   return (
-    <ul className="stack" style={{ listStyle: "none", padding: 0, gap: "var(--space-2)" }}>
+    <ul className="m-0 flex list-none flex-col p-0">
       {state.targets.map((target, index) => {
         const progress = state.results[targetKey(target)] ?? { state: "pending" as const };
-        const isNext =
-          state.waitingNext && targetKey(state.waitingNext) === targetKey(target);
+        const isNext = state.waitingNext && targetKey(state.waitingNext) === targetKey(target);
+        const active = progress.state === "active";
         return (
           <li
             // Index-qualified: the visit order is the identity here, and a
             // malformed target must not collide with its siblings.
             key={`${index}-${targetKey(target)}`}
-            className="row"
-            style={{ gap: "var(--space-2)", flexWrap: "nowrap" }}
+            className={`list-row flex-nowrap gap-2 ${active ? "bg-accent-soft" : ""}`}
           >
-            <span aria-hidden="true" style={{ color: COLOR[progress.state], width: 14 }}>
+            <span
+              aria-hidden="true"
+              className="w-[14px] shrink-0"
+              style={{ color: COLOR[progress.state] }}
+            >
               {GLYPH[progress.state]}
             </span>
             <PlatformIcon platform={target.platform} />
             <span
-              style={{
-                fontWeight: progress.state === "active" ? 600 : 400,
-                color: progress.state === "pending" ? "var(--ink-soft)" : "var(--ink)",
-              }}
+              className={active ? "font-semibold" : undefined}
+              style={{ color: progress.state === "pending" ? "var(--color-ink-soft)" : "var(--color-ink)" }}
             >
               {target.hashtag ? `#${target.hashtag}` : <em>unnamed target</em>}
             </span>
-            <span className="muted num" style={{ marginLeft: "auto", fontSize: 13 }}>
+            <span className="muted num ml-auto text-right text-[13px]">
               {progress.state === "done" || progress.state === "empty"
                 ? `${num(progress.postsOnPage ?? 0)} on page · +${num(progress.newCount ?? 0)} new · ${num(progress.cumulative ?? 0)} total`
                 : progress.state === "active"

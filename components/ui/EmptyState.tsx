@@ -10,19 +10,15 @@ export function EmptyState({
   children?: React.ReactNode;
 }) {
   return (
-    <div
-      className="card"
-      style={{ alignItems: "center", textAlign: "center", padding: "var(--space-6)" }}
-    >
-      <span aria-hidden="true" style={{ fontSize: 28, color: "var(--ink-soft)" }}>
+    <div className="card items-center gap-3 border-dashed py-10 text-center shadow-none">
+      <span
+        aria-hidden="true"
+        className="grid h-14 w-14 place-items-center rounded-full bg-surface-2 text-[26px] text-ink-soft"
+      >
         {glyph}
       </span>
-      <p style={{ fontWeight: 600 }}>{headline}</p>
-      {hint ? (
-        <p className="muted" style={{ maxWidth: "46ch" }}>
-          {hint}
-        </p>
-      ) : null}
+      <p className="card-title">{headline}</p>
+      {hint ? <p className="muted max-w-[46ch]">{hint}</p> : null}
       {children}
     </div>
   );

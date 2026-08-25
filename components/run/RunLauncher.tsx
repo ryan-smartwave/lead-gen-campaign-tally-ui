@@ -119,7 +119,7 @@ export function RunLauncher({
             >
               Run again anyway
             </button>
-            <span className="muted" style={{ fontSize: 12 }}>
+            <span className="muted text-xs">
               Only if you understand why — one run a day is the design.
             </span>
           </div>
@@ -133,7 +133,7 @@ export function RunLauncher({
     return (
       <section className="card">
         <span className="card-title">No hashtags yet</span>
-        <p className="muted" style={{ fontSize: 13 }}>
+        <p className="muted text-[13px]">
           This business has no hashtags to track.{" "}
           <Link href="/settings">Add some in settings</Link> and the run button appears.
         </p>
@@ -156,10 +156,15 @@ export function RunLauncher({
 
   const mcp = preflight?.checks.find((c) => c.id === "mcp");
   const blocked = mcp?.status === "fail";
+  // Green plumbing is noise: collapse the checklist when nothing needs a
+  // human, expand it whenever any check does.
+  const allQuiet =
+    preflight != null &&
+    preflight.checks.every((c) => c.status === "pass" || c.status === "not_checked");
 
   return (
     <section className="card">
-      <div className="row" style={{ justifyContent: "space-between" }}>
+      <div className="row justify-between">
         <span className="card-title">Run a scrape</span>
         {preflight ? (
           <button type="button" className="btn btn-sm" onClick={() => void loadPreflight()}>
@@ -168,25 +173,40 @@ export function RunLauncher({
         ) : null}
       </div>
 
-      <div className="stack" style={{ gap: "var(--space-2)" }}>
-        {(preflight?.checks ?? []).map((check) => (
-          <CheckRow key={check.id} check={check} />
-        ))}
-        {!preflight ? <span className="muted">Checking…</span> : null}
-      </div>
+      {allQuiet ? (
+        <details className="group rounded-[var(--radius-ctl)] bg-surface-2 p-3">
+          <summary className="flex cursor-pointer list-none items-center gap-2 text-[13px] select-none [&::-webkit-details-marker]:hidden">
+            <span
+              aria-hidden="true"
+              className="grid h-[18px] w-[18px] place-items-center rounded-full bg-ok-bg text-[11px] font-bold text-ok"
+            >
+              ✓
+            </span>
+            <span className="font-semibold">All checks passed</span>
+            <span className="muted">— ready to run</span>
+            <span aria-hidden="true" className="muted ml-auto text-[11px] transition-transform group-open:rotate-90">
+              ▶
+            </span>
+          </summary>
+          <div className="stack mt-2 gap-1.5">
+            {preflight.checks.map((check) => (
+              <CheckRow key={check.id} check={check} />
+            ))}
+          </div>
+        </details>
+      ) : (
+        <div className="stack gap-1.5 rounded-[var(--radius-ctl)] bg-surface-2 p-3">
+          {(preflight?.checks ?? []).map((check) => (
+            <CheckRow key={check.id} check={check} />
+          ))}
+          {!preflight ? <span className="muted">Checking…</span> : null}
+        </div>
+      )}
 
       {blocked && mcp?.remedy === "mcp_unreachable" ? (
-        <div
-          className="stack"
-          style={{
-            gap: 6,
-            padding: "var(--space-3)",
-            background: "var(--surface-2)",
-            borderRadius: "var(--radius-sm)",
-          }}
-        >
-          <strong style={{ fontSize: 13 }}>Start the Chrome bridge</strong>
-          <ol className="stack" style={{ gap: 4, margin: 0, paddingLeft: "1.2em", fontSize: 13 }}>
+        <div className="stack gap-1.5 rounded-[var(--radius-ctl)] border-l-[3px] border-warn bg-warn-bg p-3">
+          <strong className="text-[13px]">Start the Chrome bridge</strong>
+          <ol className="stack m-0 gap-1 pl-[1.2em] text-[13px]">
             {MCP_STALE_STEPS.map((step) => (
               <li key={step}>{step}</li>
             ))}
@@ -195,25 +215,20 @@ export function RunLauncher({
       ) : null}
 
       {error ? (
-        <p style={{ color: "var(--danger)", fontSize: 13 }} role="alert">
+        <p className="text-[13px] text-danger" role="alert">
           {error}
         </p>
       ) : null}
-      {hint ? (
-        <p className="muted" style={{ fontSize: 12 }}>
-          {hint}
-        </p>
-      ) : null}
+      {hint ? <p className="muted text-xs">{hint}</p> : null}
 
       <div className="row">
         {confirmForce ? (
           <>
             <button
               type="button"
-              className="btn"
+              className="btn btn-danger"
               onClick={() => void start(true)}
               disabled={busy}
-              style={{ borderColor: "var(--danger)", color: "var(--danger)" }}
             >
               Run anyway
             </button>
@@ -231,7 +246,7 @@ export function RunLauncher({
             {busy ? "Starting…" : "Run scrape"}
           </button>
         )}
-        <span className="muted" style={{ fontSize: 12 }}>
+        <span className="muted text-xs">
           {ranToday
             ? "Already ran today — one run a day is the design."
             : `${hashtagCount} hashtag${hashtagCount === 1 ? "" : "s"} · takes 30–60 minutes; you can close this page.`}
@@ -241,22 +256,26 @@ export function RunLauncher({
   );
 }
 
-function CheckRow({ check }: { check: Check }) {
-  const look = {
-    pass: { glyph: "✓", color: "var(--ok)" },
-    fail: { glyph: "×", color: "var(--danger)" },
-    warn: { glyph: "!", color: "var(--warn)" },
-    not_checked: { glyph: "·", color: "var(--ink-soft)" },
-    stale: { glyph: "◔", color: "var(--warn)" },
-  }[check.status];
+const CHECK_LOOK = {
+  pass: { glyph: "✓", cls: "text-ok bg-ok-bg" },
+  fail: { glyph: "×", cls: "text-danger bg-danger-bg" },
+  warn: { glyph: "!", cls: "text-warn bg-warn-bg" },
+  not_checked: { glyph: "·", cls: "text-ink-soft bg-surface" },
+  stale: { glyph: "◔", cls: "text-warn bg-warn-bg" },
+} as const;
 
+function CheckRow({ check }: { check: Check }) {
+  const look = CHECK_LOOK[check.status];
   return (
-    <div className="row" style={{ gap: "var(--space-2)", alignItems: "flex-start" }}>
-      <span aria-hidden="true" style={{ color: look.color, width: 12 }}>
+    <div className="flex items-start gap-2">
+      <span
+        aria-hidden="true"
+        className={`mt-px grid h-[18px] w-[18px] shrink-0 place-items-center rounded-full text-[11px] font-bold ${look.cls}`}
+      >
         {look.glyph}
       </span>
-      <span style={{ fontSize: 13 }}>
-        <span style={{ fontWeight: 600 }}>{check.label}</span>{" "}
+      <span className="text-[13px]">
+        <span className="font-semibold">{check.label}</span>{" "}
         <span className="muted">{check.detail}</span>
       </span>
     </div>

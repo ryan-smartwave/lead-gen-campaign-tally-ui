@@ -37,17 +37,17 @@ export default async function RunDetailPage({
 
   return (
     <>
-      <section className="row" style={{ justifyContent: "space-between" }}>
+      <section className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="muted" style={{ fontSize: 13 }}>
+          <p className="muted text-[13px]">
             <Link href={`/runs?b=${encodeURIComponent(business.slug)}`}>← History</Link>
             {" · "}
             <span>{business.name}</span>
           </p>
-          <h1 style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.02em" }}>
+          <h1 className="text-[26px] font-bold">
             {dayLabel(run.day)} at {campaignTime(run.startedAt)}
           </h1>
-          <p className="muted" style={{ fontSize: 13 }}>
+          <p className="muted text-[13px]">
             {rows.length} hashtags visited · {num(totals.newPosts)} new posts found
           </p>
         </div>
@@ -55,13 +55,9 @@ export default async function RunDetailPage({
       </section>
 
       {run.status === "aborted" ? (
-        <section
-          role="alert"
-          className="card"
-          style={{ borderLeft: "3px solid var(--danger)", background: "var(--danger-bg)" }}
-        >
-          <strong style={{ color: "var(--danger)" }}>This run stopped early</strong>
-          <p style={{ fontSize: 13 }}>
+        <section role="alert" className="card border-l-[3px] border-l-danger bg-danger-bg">
+          <strong className="text-danger">This run stopped early</strong>
+          <p className="text-[13px]">
             A danger signal appeared, so the run aborted rather than pushing on. Whatever it had
             already collected was kept — the numbers below are partial.
           </p>
@@ -84,9 +80,9 @@ export default async function RunDetailPage({
               {rows.map((row) => (
                 <tr key={`${row.platform}:${row.hashtag}`}>
                   <td>
-                    <span className="row" style={{ gap: 6, flexWrap: "nowrap" }}>
+                    <span className="flex items-center gap-1.5">
                       <PlatformIcon platform={row.platform} />
-                      <span style={{ fontWeight: 600 }}>#{row.hashtag}</span>
+                      <span className="font-semibold">#{row.hashtag}</span>
                     </span>
                   </td>
                   <td className="right num">+{num(row.newPosts)}</td>
@@ -100,13 +96,13 @@ export default async function RunDetailPage({
           </table>
         </div>
         {rows.some((r) => r.status === "empty") ? (
-          <p className="muted" style={{ fontSize: 12 }}>
+          <p className="muted text-xs">
             An empty hashtag usually means the platform is restricting that tag, not that the
             scrape failed.
           </p>
         ) : null}
         {neverVisited.length > 0 ? (
-          <p className="muted" style={{ fontSize: 12 }}>
+          <p className="muted text-xs">
             {/* Platform must be named: the same hashtag exists on both platforms, so
                 "#weddingsph" alone reads as contradicting the table above. */}
             Not part of this run:{" "}

@@ -77,7 +77,10 @@ export function polylinePoints(values: number[], width: number, height: number):
     .join(" ");
 }
 
-/** Series colour tokens, cycled. Defined in globals.css and stable across themes. */
+/**
+ * Series colour tokens. Eight CVD-validated slots defined in globals.css,
+ * re-stepped per theme; assigned in fixed order by series index.
+ */
 export function seriesColor(index: number): string {
-  return `var(--series-${(index % 7) + 1})`;
+  return `var(--series-${(index % 8) + 1})`;
 }

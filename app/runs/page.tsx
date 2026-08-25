@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { getDashboard, resolveBusiness } from "@/lib/data";
+import { getBusinesses, getDashboard, resolveBusiness } from "@/lib/data";
+import { BusinessTabs } from "@/components/nav/BusinessTabs";
 import { campaignTime, dayLabel, num } from "@/lib/format";
 import { StatusPill } from "@/components/data/StatusPill";
 import { ExportButtons } from "@/components/data/ExportButtons";
@@ -14,7 +15,7 @@ export default async function RunsPage({
   searchParams: Promise<{ b?: string }>;
 }) {
   const { b } = await searchParams;
-  const business = await resolveBusiness(b);
+  const [business, businesses] = await Promise.all([resolveBusiness(b), getBusinesses()]);
 
   if (!business) {
     return (
@@ -41,14 +42,15 @@ export default async function RunsPage({
 
   return (
     <>
+      <BusinessTabs businesses={businesses} selected={business.slug} basePath="/runs" />
+
       <section>
-        <h1 style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.02em" }}>History</h1>
-        <p className="muted" style={{ fontSize: 13 }}>
+        <p className="label">Scrape history</p>
+        <h1 className="text-[26px] font-bold">History</h1>
+        <p className="muted text-[13px]">
           {business.name} · {d.runs.length} scrape{d.runs.length === 1 ? "" : "s"} recorded
         </p>
       </section>
-
-      <ExportButtons business={business.slug} hasPosts={d.distinctPosts > 0} />
 
       <section className="card">
         <div className="scroll-x">
@@ -70,13 +72,9 @@ export default async function RunsPage({
                 return (
                   <tr
                     key={run.id}
-                    style={
-                      run.status === "aborted"
-                        ? { boxShadow: "inset 3px 0 0 var(--danger)" }
-                        : undefined
-                    }
+                    className={run.status === "aborted" ? "shadow-[inset_3px_0_0_var(--color-danger)]" : undefined}
                   >
-                    <td style={{ fontWeight: 600 }}>{dayLabel(run.day)}</td>
+                    <td className="font-semibold">{dayLabel(run.day)}</td>
                     <td className="muted num">{campaignTime(run.startedAt)}</td>
                     <td className="right num">{rows.length}</td>
                     <td className="right num">{num(newPosts)}</td>
@@ -86,7 +84,7 @@ export default async function RunsPage({
                     <td className="right">
                       <Link
                         href={`/runs/${encodeURIComponent(run.id)}${query}`}
-                        style={{ fontSize: 13 }}
+                        className="text-[13px] font-semibold"
                       >
                         Details →
                       </Link>
@@ -98,6 +96,8 @@ export default async function RunsPage({
           </table>
         </div>
       </section>
+
+      <ExportButtons business={business.slug} hasPosts={d.distinctPosts > 0} />
     </>
   );
 }

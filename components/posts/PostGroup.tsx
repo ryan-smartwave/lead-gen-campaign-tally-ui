@@ -20,11 +20,17 @@ export function PostGroup({
   posts: Post[];
 }) {
   return (
-    <details className="card">
-      <summary style={{ cursor: "pointer", display: "flex", gap: 8, alignItems: "center" }}>
+    <details className="card group">
+      <summary className="flex cursor-pointer list-none items-center gap-2 select-none [&::-webkit-details-marker]:hidden">
+        <span
+          aria-hidden="true"
+          className="text-[11px] text-ink-soft transition-transform group-open:rotate-90"
+        >
+          ▶
+        </span>
         <PlatformIcon platform={platform} />
-        <span style={{ fontWeight: 600 }}>#{hashtag}</span>
-        <span className="muted num" style={{ fontSize: 13 }}>
+        <span className="font-semibold">#{hashtag}</span>
+        <span className="muted num text-[13px]">
           {count} post{count === 1 ? "" : "s"}
         </span>
       </summary>

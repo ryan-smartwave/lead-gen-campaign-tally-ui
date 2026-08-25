@@ -25,14 +25,12 @@ export function GapCountdown({ waitUntil, next }: { waitUntil: number; next: Tar
   if (remaining <= 0) return null;
 
   return (
-    <div className="stack" style={{ gap: 4 }}>
-      <span style={{ fontWeight: 600 }}>
-        Waiting {countdown(remaining)}
-        {next ? (
-          <span className="muted" style={{ fontWeight: 400 }}> before #{next.hashtag}</span>
-        ) : null}
+    <div className="stack gap-1 rounded-[var(--radius-ctl)] bg-accent-soft p-3">
+      <span className="font-semibold text-accent">
+        <span className="num">Waiting {countdown(remaining)}</span>
+        {next ? <span className="muted font-normal"> before #{next.hashtag}</span> : null}
       </span>
-      <span className="muted" style={{ fontSize: 12 }}>
+      <span className="muted text-xs">
         Long random gaps between hashtags are deliberate — they are what keeps the account safe.
       </span>
     </div>

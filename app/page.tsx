@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { getDashboard, resolveBusiness } from "@/lib/data";
+import { getBusinesses, getDashboard, resolveBusiness } from "@/lib/data";
+import { BusinessTabs } from "@/components/nav/BusinessTabs";
 import { ExportButtons } from "@/components/data/ExportButtons";
 import { canRunScrapes } from "@/lib/capability";
 import { dayLabel, num, runStamp } from "@/lib/format";
@@ -21,7 +22,11 @@ export default async function DashboardPage({
   searchParams: Promise<{ b?: string }>;
 }) {
   const { b } = await searchParams;
-  const [business, local] = await Promise.all([resolveBusiness(b), canRunScrapes()]);
+  const [business, businesses, local] = await Promise.all([
+    resolveBusiness(b),
+    getBusinesses(),
+    canRunScrapes(),
+  ]);
 
   if (!business) {
     return (
@@ -46,14 +51,16 @@ export default async function DashboardPage({
 
   return (
     <>
-      <section className="row" style={{ justifyContent: "space-between" }}>
+      <BusinessTabs businesses={businesses} selected={business.slug} basePath="/" />
+
+      <section className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.02em" }}>
-            {business.name}
-          </h1>
+          <p className="label">Campaign dashboard</p>
+          <h1 className="text-[26px] font-bold">{business.name}</h1>
           {d.latestRun ? (
-            <p className="muted" style={{ fontSize: 13 }}>
-              Last scrape {runStamp(d.latestRun.startedAt)} · {latestRows.length} hashtags ·{" "}
+            <p className="muted text-[13px]">
+              Last scrape {runStamp(d.latestRun.startedAt)} · {latestRows.length} hashtag
+              {latestRows.length === 1 ? "" : "s"} ·{" "}
               <Link
                 href={`/runs/${encodeURIComponent(d.latestRun.id)}?b=${encodeURIComponent(business.slug)}`}
               >
@@ -61,9 +68,7 @@ export default async function DashboardPage({
               </Link>
             </p>
           ) : (
-            <p className="muted" style={{ fontSize: 13 }}>
-              No scrapes recorded yet.
-            </p>
+            <p className="muted text-[13px]">No scrapes recorded yet.</p>
           )}
         </div>
         {d.latestRun ? <StatusPill status={d.latestRun.status} /> : null}
@@ -75,9 +80,6 @@ export default async function DashboardPage({
         business={business.slug}
         hashtagCount={business.hashtags.length}
       />
-      {d.runs.length > 0 ? (
-        <ExportButtons business={business.slug} hasPosts={d.distinctPosts > 0} />
-      ) : null}
 
       {/* No sync notice any more: the scraper writes results to the database as
           it goes, so there is no second copy that could be ahead of it. */}
@@ -95,26 +97,26 @@ export default async function DashboardPage({
       ) : (
         <>
           <section className="tiles">
-            <StatTile label="Unique posts" value={d.distinctPosts} />
+            <StatTile label="Unique posts" value={d.distinctPosts} accent="var(--color-accent)" />
             <StatTile label="Found last run" value={latestNew} />
             <StatTile
               label="Instagram"
               value={d.tallied.instagram}
-              accent="var(--instagram)"
+              accent="var(--color-instagram)"
               qualifier="tallied"
             />
             <StatTile
               label="Facebook"
               value={d.tallied.facebook}
-              accent="var(--facebook)"
+              accent="var(--color-facebook)"
               qualifier="tallied"
             />
           </section>
 
           <section className="card">
-            <div className="row" style={{ justifyContent: "space-between" }}>
+            <div className="row justify-between">
               <span className="card-title">By hashtag</span>
-              <span className="muted" style={{ fontSize: 12 }}>
+              <span className="muted text-xs">
                 {num(d.tallied.tallied)} tallied across hashtags · {num(d.distinctPosts)} distinct
                 posts
               </span>
@@ -124,7 +126,7 @@ export default async function DashboardPage({
               latestRows={latestRows}
               configuredOnly={d.configuredOnly}
             />
-            <p className="muted" style={{ fontSize: 12 }}>
+            <p className="muted text-xs">
               A post can carry several campaign hashtags, so the per-hashtag column adds up to more
               than the distinct total. Both numbers are real; they answer different questions.
             </p>
@@ -146,7 +148,7 @@ export default async function DashboardPage({
               <section className="card">
                 <span className="card-title">Newly discovered per day</span>
                 <NewPostsBars data={d.daily} flags={d.flags} />
-                <p className="muted" style={{ fontSize: 12 }}>
+                <p className="muted text-xs">
                   Posts are deduplicated for the life of the campaign, so this naturally falls as
                   coverage saturates. The cumulative chart is the headline signal.
                 </p>
@@ -154,39 +156,37 @@ export default async function DashboardPage({
             </div>
           )}
 
-          <section className="card">
-            <div className="row" style={{ justifyContent: "space-between" }}>
-              <span className="card-title">Recent scrapes</span>
-              <Link href={`/runs?b=${encodeURIComponent(business.slug)}`} style={{ fontSize: 13 }}>
-                All history →
-              </Link>
-            </div>
-            <div className="stack">
-              {d.runs.slice(0, 5).map((run) => {
-                const rows = d.rows.filter((r) => r.runId === run.id);
-                return (
-                  <Link
-                    key={run.id}
-                    href={`/runs/${encodeURIComponent(run.id)}?b=${encodeURIComponent(business.slug)}`}
-                    className="row"
-                    style={{
-                      justifyContent: "space-between",
-                      textDecoration: "none",
-                      color: "inherit",
-                      borderTop: "1px solid var(--line)",
-                      paddingTop: "var(--space-3)",
-                    }}
-                  >
-                    <span style={{ fontWeight: 600 }}>{dayLabel(run.day)}</span>
-                    <span className="muted num" style={{ fontSize: 13 }}>
-                      {rows.length} hashtags · +{num(rows.reduce((s, r) => s + r.newPosts, 0))}
-                    </span>
-                    <StatusPill status={run.status} />
-                  </Link>
-                );
-              })}
-            </div>
-          </section>
+          <div className="grid-2">
+            <section className="card">
+              <div className="row justify-between">
+                <span className="card-title">Recent scrapes</span>
+                <Link href={`/runs?b=${encodeURIComponent(business.slug)}`} className="text-[13px]">
+                  All history →
+                </Link>
+              </div>
+              <div className="flex flex-col">
+                {d.runs.slice(0, 5).map((run) => {
+                  const rows = d.rows.filter((r) => r.runId === run.id);
+                  return (
+                    <Link
+                      key={run.id}
+                      href={`/runs/${encodeURIComponent(run.id)}?b=${encodeURIComponent(business.slug)}`}
+                      className="list-row justify-between"
+                    >
+                      <span className="font-semibold">{dayLabel(run.day)}</span>
+                      <span className="muted num text-[13px]">
+                        {rows.length} hashtag{rows.length === 1 ? "" : "s"} · +
+                        {num(rows.reduce((s, r) => s + r.newPosts, 0))}
+                      </span>
+                      <StatusPill status={run.status} />
+                    </Link>
+                  );
+                })}
+              </div>
+            </section>
+
+            <ExportButtons business={business.slug} hasPosts={d.distinctPosts > 0} />
+          </div>
         </>
       )}
     </>

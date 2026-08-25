@@ -3,7 +3,29 @@
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { Business } from "@/lib/types";
-import styles from "./AppNav.module.css";
+
+/** The gradient logo tile plus wordmark; also the nav's Suspense fallback. */
+export function BrandMark() {
+  return (
+    <span className="flex items-center gap-2 text-ink no-underline">
+      <span
+        aria-hidden="true"
+        className="grid h-7 w-7 place-items-center rounded-lg bg-[linear-gradient(135deg,var(--color-accent),#0c8ea4)] font-(family-name:--font-display) text-[13px] font-bold text-white"
+      >
+        #
+      </span>
+      <span className="font-(family-name:--font-display) font-bold tracking-tight max-[560px]:hidden">
+        Campaign&nbsp;Tally
+      </span>
+    </span>
+  );
+}
+
+const LINKS = [
+  { href: "/", label: "Dashboard" },
+  { href: "/runs", label: "History" },
+  { href: "/settings", label: "Settings" },
+];
 
 /**
  * Nav links plus the business switcher.
@@ -29,23 +51,37 @@ export function NavInner({ businesses }: { businesses: Business[] }) {
 
   return (
     <>
-      <Link href={`/${query}`} className={styles.brand}>
-        Campaign&nbsp;Tally
+      <Link href={`/${query}`} className="no-underline">
+        <BrandMark />
       </Link>
-      <div className={styles.links}>
-        <Link href={`/${query}`}>Dashboard</Link>
-        <Link href={`/runs${query}`}>History</Link>
-        <Link href="/settings">Settings</Link>
+      <div className="flex items-center gap-1 text-sm font-semibold">
+        {LINKS.map((link) => {
+          const active =
+            link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
+          return (
+            <Link
+              key={link.href}
+              href={`${link.href}${link.href === "/settings" ? "" : query}`}
+              aria-current={active ? "page" : undefined}
+              className={
+                active
+                  ? "rounded-full bg-accent-soft px-3 py-1 text-accent no-underline"
+                  : "rounded-full px-3 py-1 text-ink-soft no-underline transition-colors hover:bg-surface-2 hover:text-ink"
+              }
+            >
+              {link.label}
+            </Link>
+          );
+        })}
       </div>
-      <div className={styles.right}>
+      <div className="ml-auto flex items-center gap-2">
         {businesses.length > 1 ? (
           <label>
             <span className="sr-only">Business</span>
             <select
               value={selected?.slug ?? ""}
               onChange={(e) => pick(e.target.value)}
-              className="btn btn-sm"
-              style={{ maxWidth: 190 }}
+              className="select max-w-[230px]"
             >
               {businesses.map((b) => (
                 <option key={b.slug} value={b.slug}>

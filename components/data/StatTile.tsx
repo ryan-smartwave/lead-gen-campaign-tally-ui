@@ -17,12 +17,16 @@ export function StatTile({
   qualifier?: string;
 }) {
   return (
-    <div className="card" style={{ gap: "var(--space-1)" }}>
-      <span className="label" style={accent ? { color: accent } : undefined}>
-        {label}
-      </span>
+    <div className="card relative gap-1 overflow-hidden pl-5">
+      {/* Identity keyline: colour lives on the mark, never on the number. */}
+      <span
+        aria-hidden="true"
+        className="absolute inset-y-3 left-0 w-1 rounded-r-full"
+        style={{ background: accent ?? "var(--color-line)" }}
+      />
+      <span className="label">{label}</span>
       <span className="metric">{num(value)}</span>
-      <span className="muted" style={{ fontSize: 12 }}>
+      <span className="muted text-xs">
         {qualifier ? qualifier : change === undefined ? " " : `${delta(change)} this run`}
       </span>
     </div>

@@ -1,23 +1,22 @@
 import { Suspense } from "react";
 import { ThemeToggle } from "./ThemeToggle";
-import { NavInner } from "./NavInner";
+import { NavInner, BrandMark } from "./NavInner";
 import { canRunScrapes } from "@/lib/capability";
 import { getBusinesses } from "@/lib/data";
-import styles from "./AppNav.module.css";
 
 export async function AppNav() {
   const [businesses, local] = await Promise.all([getBusinesses(), canRunScrapes()]);
 
   return (
-    <header className={styles.bar}>
-      <nav className={styles.inner}>
-        <Suspense fallback={<span className={styles.brand}>Campaign&nbsp;Tally</span>}>
+    <header className="sticky top-0 z-10 border-b border-line bg-[color-mix(in_srgb,var(--color-surface)_88%,transparent)] backdrop-blur-md">
+      <nav className="mx-auto flex max-w-[1120px] items-center gap-4 px-4 py-2.5">
+        <Suspense fallback={<BrandMark />}>
           <NavInner businesses={businesses} />
         </Suspense>
-        <div className={styles.trailing}>
+        <div className="flex items-center gap-2">
           {!local ? (
             <span
-              className={`pill ${styles.readonly}`}
+              className="pill muted"
               title="Viewing only — scrapes run on the laptop where Chrome is signed in"
             >
               Read-only

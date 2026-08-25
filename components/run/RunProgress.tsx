@@ -37,21 +37,20 @@ export function RunProgress({
 
   return (
     <section className="card" aria-live="polite">
-      <div className="row" style={{ justifyContent: "space-between" }}>
-        <span className="card-title">
+      <div className="row justify-between">
+        <span className="card-title flex items-center gap-2">
+          {running ? <span className="live-dot" aria-hidden="true" /> : null}
           {running ? "Scrape in progress" : "Last scrape"}
         </span>
         <StatusPill status={state.status} />
       </div>
 
-      <div className="row" style={{ gap: "var(--space-4)", fontSize: 13 }}>
-        <span className="num">
+      <div className="row gap-4 text-[13px]">
+        <span className="num font-semibold">
           {done} of {total} hashtags
         </span>
         {state.startedAt ? (
-          <span className="muted num">
-            running {duration(state.startedAt, state.finishedAt)}
-          </span>
+          <span className="muted num">running {duration(state.startedAt, state.finishedAt)}</span>
         ) : null}
         {estimate ? (
           <span className="muted num">
@@ -62,19 +61,11 @@ export function RunProgress({
 
       {/* Determinate budget bar: honest progress even during a silent gap. */}
       {running && state.budgetMinutes > 0 && state.startedAt ? (
-        <div
-          style={{
-            height: 4,
-            borderRadius: 999,
-            background: "var(--surface-2)",
-            overflow: "hidden",
-          }}
-        >
+        <div className="h-1.5 overflow-hidden rounded-full bg-surface-2">
           <div
+            className="h-full rounded-full bg-[linear-gradient(90deg,var(--color-accent),#0c8ea4)] transition-[width] duration-1000"
             style={{
-              height: "100%",
               width: `${Math.min(100, ((Date.now() - new Date(state.startedAt).getTime()) / (state.budgetMinutes * 60_000)) * 100)}%`,
-              background: "var(--accent)",
             }}
           />
         </div>
@@ -83,26 +74,17 @@ export function RunProgress({
       {state.danger ? (
         <div
           role="alert"
-          className="stack"
-          style={{
-            gap: 6,
-            padding: "var(--space-3)",
-            borderRadius: "var(--radius-sm)",
-            background: "var(--danger-bg)",
-            borderLeft: "3px solid var(--danger)",
-          }}
+          className="stack gap-1.5 rounded-[var(--radius-ctl)] border-l-[3px] border-danger bg-danger-bg p-3"
         >
-          <strong style={{ color: "var(--danger)" }}>
-            {dangerCopy(state.danger.reason).headline}
-          </strong>
-          <span style={{ fontSize: 13 }}>{dangerCopy(state.danger.reason).what}</span>
+          <strong className="text-danger">{dangerCopy(state.danger.reason).headline}</strong>
+          <span className="text-[13px]">{dangerCopy(state.danger.reason).what}</span>
           {state.danger.hashtag ? (
-            <span className="muted" style={{ fontSize: 12 }}>
+            <span className="muted text-xs">
               Stopped while visiting #{state.danger.hashtag}
               {state.danger.url ? ` (${state.danger.url})` : ""}
             </span>
           ) : null}
-          <span style={{ fontSize: 13, fontWeight: 600 }}>{DANGER_REMEDY}</span>
+          <span className="text-[13px] font-semibold">{DANGER_REMEDY}</span>
         </div>
       ) : null}
 
@@ -112,13 +94,13 @@ export function RunProgress({
 
       <HashtagChecklist state={state} />
 
-      <div className="row" style={{ justifyContent: "space-between", fontSize: 12 }}>
-        <span className={silentMinutes > 8 ? "" : "muted"} style={silentMinutes > 8 ? { color: "var(--warn)" } : undefined}>
+      <div className="row justify-between text-xs">
+        <span className={silentMinutes > 8 ? "text-warn" : "muted"}>
           {state.lastEventAt ? `last update ${relativeTime(state.lastEventAt)}` : "no updates yet"}
           {silentMinutes > 12 ? " — longer than expected; check the terminal window" : ""}
         </span>
         {running ? (
-          <span className="row" style={{ gap: "var(--space-2)" }}>
+          <span className="row gap-2">
             <span className="muted">{connected ? "live" : "reconnecting…"}</span>
             {onStop ? (
               <button type="button" className="btn btn-sm" onClick={onStop}>

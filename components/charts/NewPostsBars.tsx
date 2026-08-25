@@ -40,6 +40,25 @@ export function NewPostsBars({
   const labelEvery = Math.ceil(data.length / 8);
 
   return (
+    <>
+    <div className="row gap-3 text-xs">
+      <span className="flex items-center gap-1.5">
+        <span
+          aria-hidden="true"
+          className="inline-block h-2.5 w-2.5 rounded-[3px]"
+          style={{ background: "var(--instagram)" }}
+        />
+        Instagram
+      </span>
+      <span className="flex items-center gap-1.5">
+        <span
+          aria-hidden="true"
+          className="inline-block h-2.5 w-2.5 rounded-[3px]"
+          style={{ background: "var(--facebook)" }}
+        />
+        Facebook
+      </span>
+    </div>
     <svg
       viewBox={`0 0 ${box.width} ${box.height}`}
       width="100%"
@@ -72,19 +91,22 @@ export function NewPostsBars({
         const igH = (d.instagram / max) * area.h;
         const fbH = (d.facebook / max) * area.h;
         const flag = flags[d.day];
+        // A 2px surface gap between stacked segments, so the two platforms
+        // never read as one fused bar; only when both segments are visible.
+        const gap = fbH > 1 && igH > 1 ? 2 : 0;
         return (
           <g key={d.day}>
             {fbH > 0 ? (
-              <rect x={x} y={area.y1 - fbH} width={barW} height={fbH} fill="var(--facebook)" rx="1" />
+              <rect x={x} y={area.y1 - fbH} width={barW} height={fbH} fill="var(--facebook)" rx="1.5" />
             ) : null}
             {igH > 0 ? (
               <rect
                 x={x}
-                y={area.y1 - fbH - igH}
+                y={area.y1 - fbH - igH - gap}
                 width={barW}
-                height={igH}
+                height={Math.max(1, igH - gap)}
                 fill="var(--instagram)"
-                rx="1"
+                rx="1.5"
               />
             ) : null}
             {flag ? (
@@ -111,5 +133,6 @@ export function NewPostsBars({
         );
       })}
     </svg>
+    </>
   );
 }

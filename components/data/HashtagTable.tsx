@@ -41,14 +41,12 @@ export function HashtagTable({
             return (
               <tr key={key}>
                 <td>
-                  <span className="row" style={{ gap: 6, flexWrap: "nowrap" }}>
+                  <span className="flex items-center gap-1.5">
                     <PlatformIcon platform={s.platform} />
-                    <span style={{ fontWeight: 600 }}>#{s.hashtag}</span>
+                    <span className="font-semibold">#{s.hashtag}</span>
                   </span>
                 </td>
-                <td className="right" style={{ fontWeight: 600 }}>
-                  {num(lastCumulative(s))}
-                </td>
+                <td className="right font-semibold">{num(lastCumulative(s))}</td>
                 <td className="right muted">{row ? delta(row.newPosts) : "—"}</td>
                 <td>
                   <Sparkline
@@ -66,16 +64,14 @@ export function HashtagTable({
           {configuredOnly.map((h) => (
             <tr key={`${h.platform}:${h.hashtag}`}>
               <td>
-                <span className="row" style={{ gap: 6, flexWrap: "nowrap" }}>
+                <span className="flex items-center gap-1.5">
                   <PlatformIcon platform={h.platform} />
                   <span className="muted">#{h.hashtag}</span>
                 </span>
               </td>
               <td className="right muted">0</td>
               <td className="right muted">—</td>
-              <td className="muted" style={{ fontSize: 12 }}>
-                not yet scraped
-              </td>
+              <td className="muted text-xs">not yet scraped</td>
               <td>
                 <span className="muted">—</span>
               </td>
