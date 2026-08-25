@@ -103,6 +103,17 @@ count.
 campaign, so daily discovery drops as coverage saturates. That is the design
 working; the cumulative curve is the signal.
 
+**A hashtag's daily series has holes.** A run visits at most
+`maxHashtagsPerRun` hashtags (12 by default); a business tracking more rotates
+through the least recently scraped first, so every hashtag is covered but not
+every day. Preflight shows a "Hashtag coverage" warning whenever the rotation
+is active. The cumulative curve is unaffected.
+
+**A run counts down before the first hashtag.** Every run starts with a
+randomized delay (the scraper's `startJitterMs`, up to 10 minutes by default),
+so daily runs can never fall into a fixed clock rhythm — a bot signature. The
+countdown you see before the first hashtag is that rule working, not a hang.
+
 ## Facebook has no post links
 
 Facebook hides post URLs from the automation layer, so Facebook posts are

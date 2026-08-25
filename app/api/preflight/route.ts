@@ -75,6 +75,17 @@ export async function GET(request: Request) {
         ? `${business.name}: ${today?.detail ?? "unknown"}`
         : (today?.detail ?? `no run yet today (${campaignDay()})`),
     });
+
+    // Shown only as a warning: "everything fits" is the unremarkable default.
+    const coverage = service.checks.coverage;
+    if (coverage?.state === "warn") {
+      checks.push({
+        id: "coverage",
+        status: "warn",
+        label: "Hashtag coverage",
+        detail: coverage.detail,
+      });
+    }
   }
 
   const body: Preflight & { blockedBy: scraper.BlockedBy; serviceReachable: boolean } = {

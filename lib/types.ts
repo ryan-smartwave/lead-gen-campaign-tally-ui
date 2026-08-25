@@ -96,7 +96,7 @@ export interface Series {
 
 /* ---------- preflight ---------- */
 
-export type CheckId = "mcp" | "sessions" | "today";
+export type CheckId = "mcp" | "sessions" | "today" | "coverage";
 export type CheckStatus = "pass" | "fail" | "warn" | "not_checked" | "stale";
 
 /** Remedies the UI must spell out; `mcp_stale` needs a manual browser action. */
@@ -160,7 +160,13 @@ export type RunEvent =
       hashtag: string;
       message: string;
     })
-  | (EventBase & { type: "waiting"; seconds: number; next: Target | null })
+  | (EventBase & {
+      type: "waiting";
+      seconds: number;
+      next: Target | null;
+      /** Present on the randomized delay before the first page visit (ANTIBAN §6). */
+      reason?: "start_jitter";
+    })
   | (EventBase & {
       type: "danger";
       reason: DangerReason;
