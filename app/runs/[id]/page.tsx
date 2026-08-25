@@ -114,6 +114,12 @@ export default async function RunDetailPage({
 
       <section className="stack">
         <span className="card-title">Posts found</span>
+        {groups.length === 0 ? (
+          <p className="muted text-[13px]">
+            No new posts in this run — every post on the visited pages had already been tallied on
+            an earlier day.
+          </p>
+        ) : null}
         {groups.map(({ row, posts }) => (
           <PostGroup
             key={`${row.platform}:${row.hashtag}`}

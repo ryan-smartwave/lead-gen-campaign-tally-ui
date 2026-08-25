@@ -113,25 +113,8 @@ export default async function DashboardPage({
             />
           </section>
 
-          <section className="card">
-            <div className="row justify-between">
-              <span className="card-title">By hashtag</span>
-              <span className="muted text-xs">
-                {num(d.tallied.tallied)} tallied across hashtags · {num(d.distinctPosts)} distinct
-                posts
-              </span>
-            </div>
-            <HashtagTable
-              series={d.series}
-              latestRows={latestRows}
-              configuredOnly={d.configuredOnly}
-            />
-            <p className="muted text-xs">
-              A post can carry several campaign hashtags, so the per-hashtag column adds up to more
-              than the distinct total. Both numbers are real; they answer different questions.
-            </p>
-          </section>
-
+          {/* Trends before detail: the shape of the campaign reads first, the
+              per-hashtag breakdown supports it. */}
           {d.runs.length < 2 ? (
             <section className="card">
               <span className="label">Trends</span>
@@ -155,6 +138,25 @@ export default async function DashboardPage({
               </section>
             </div>
           )}
+
+          <section className="card">
+            <div className="row justify-between">
+              <span className="card-title">By hashtag</span>
+              <span className="muted text-xs">
+                {num(d.tallied.tallied)} tallied across hashtags · {num(d.distinctPosts)} distinct
+                posts
+              </span>
+            </div>
+            <HashtagTable
+              series={d.series}
+              latestRows={latestRows}
+              configuredOnly={d.configuredOnly}
+            />
+            <p className="muted text-xs">
+              A post can carry several campaign hashtags, so the per-hashtag column adds up to more
+              than the distinct total. Both numbers are real; they answer different questions.
+            </p>
+          </section>
 
           <div className="grid-2">
             <section className="card">
