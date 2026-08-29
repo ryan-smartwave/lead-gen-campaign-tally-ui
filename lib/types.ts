@@ -217,6 +217,10 @@ export type RunEvent =
       status: "ok" | "empty";
       /** Seconds the visit took; absent on streams from older scrapers. */
       durationSeconds?: number;
+      /** Why the scroll ended; absent on streams from older scrapers. */
+      stopReason?: StopReason;
+      scrollSteps?: number;
+      visitSeq?: number;
     })
   | (EventBase & {
       type: "hashtag_error";
@@ -274,6 +278,9 @@ export type TargetProgressState =
   | "error"
   | "never_visited";
 
+/** How a hashtag's scroll ended. */
+export type StopReason = "dry" | "post_cap" | "budget" | "steps";
+
 export interface TargetProgress {
   state: TargetProgressState;
   postsOnPage?: number;
@@ -282,6 +289,9 @@ export interface TargetProgress {
   cumulative?: number;
   message?: string;
   durationSeconds?: number;
+  stopReason?: StopReason;
+  scrollSteps?: number;
+  visitSeq?: number;
 }
 
 /** Stable key for a target across events, results maps, and DB rows. */

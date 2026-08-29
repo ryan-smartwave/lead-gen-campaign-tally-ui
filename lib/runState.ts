@@ -68,6 +68,9 @@ export function reduceRunEvent(state: RunViewState, event: RunEvent): RunViewSta
         freshCount: event.freshCount ?? event.newCount,
         cumulative: event.cumulative,
         durationSeconds: event.durationSeconds,
+        stopReason: event.stopReason,
+        scrollSteps: event.scrollSteps,
+        visitSeq: event.visitSeq,
       };
       break;
     }
