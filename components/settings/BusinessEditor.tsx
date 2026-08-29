@@ -246,14 +246,14 @@ export function BusinessEditor({
                 onClick={() => setConfirmDelete(true)}
                 disabled={busy}
               >
-                Remove business
+                Remove campaign
               </button>
             )}
           </div>
         </>
       ) : (
         <p className="muted text-[13px]">
-          Read-only here. Businesses and hashtags are edited on the machine that runs the scraper.
+          Read-only here. Campaigns and hashtags are edited on the machine that runs the scraper.
         </p>
       )}
     </section>

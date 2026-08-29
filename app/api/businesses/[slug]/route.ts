@@ -48,7 +48,7 @@ export async function DELETE(
     await scraper.deleteBusiness(slug);
     return NextResponse.json({
       deleted: slug,
-      note: "Collected results were left in place; re-creating this business with the same id restores its history.",
+      note: "Collected results were left in place; re-creating this campaign with the same id restores its history.",
     });
   } catch (err) {
     return fail(err);

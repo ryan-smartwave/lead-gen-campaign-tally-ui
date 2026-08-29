@@ -142,7 +142,7 @@ export function RunLauncher({
       <section className="card">
         <span className="card-title">No hashtags yet</span>
         <p className="muted text-[13px]">
-          This business has no hashtags to track.{" "}
+          This campaign has no hashtags to track.{" "}
           <Link href="/settings">Add some in settings</Link> and the run button appears.
         </p>
       </section>

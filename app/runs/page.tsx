@@ -19,7 +19,7 @@ export default async function RunsPage({
 
   if (!business) {
     return (
-      <EmptyState glyph="◇" headline="No businesses set up yet">
+      <EmptyState glyph="◇" headline="No campaigns set up yet">
         <Link href="/settings">Go to settings</Link>
       </EmptyState>
     );

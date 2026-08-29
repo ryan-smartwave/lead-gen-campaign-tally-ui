@@ -22,7 +22,7 @@ export function NewBusiness() {
       });
       const body = await res.json();
       if (!res.ok) {
-        setError(body.message ?? "Could not add the business.");
+        setError(body.message ?? "Could not add the campaign.");
         return;
       }
       setName("");
@@ -36,9 +36,9 @@ export function NewBusiness() {
 
   return (
     <section className="card">
-      <span className="card-title">Add a business</span>
+      <span className="card-title">Add a campaign</span>
       <p className="muted text-[13px]">
-        Each business keeps its own hashtags, history, and duplicate-tracking, so their numbers
+        Each campaign keeps its own hashtags, history, and duplicate-tracking, so their numbers
         never mix. They share the browser connection, so only one can be scraping at a time.
       </p>
       <div className="row gap-2">

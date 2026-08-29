@@ -32,11 +32,11 @@ export default async function DashboardPage({
     return (
       <EmptyState
         glyph="◇"
-        headline="No businesses set up yet"
+        headline="No campaigns set up yet"
         hint={
           local
-            ? "Add a business in Settings and give it the hashtags you want tracked."
-            : "Businesses are set up on the machine that runs the scraper."
+            ? "Add a campaign in Settings and give it the hashtags you want tracked."
+            : "Campaigns are set up on the machine that runs the scraper."
         }
       >
         <Link href="/settings">Go to settings</Link>

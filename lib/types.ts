@@ -96,6 +96,8 @@ export interface InstagramPost {
   firstSeenAt: string;
   firstSeenRunId: string | null;
   hashtag: string;
+  /** Other hashtags found in the post's own text, beyond the one searched. */
+  otherHashtags: string[];
 }
 
 export interface FacebookPost {
@@ -104,9 +106,24 @@ export interface FacebookPost {
   /** May be null, or the literal "<redacted>" when the automation layer hid it. */
   author: string | null;
   text: string | null;
+  /**
+   * Rich fields read passively from the page's own GraphQL responses or the
+   * card's React props, or (url) derived from a DOM-harvested fbid. Null when
+   * none of those passive sources covered the post.
+   */
+  url: string | null;
+  username: string | null;
+  /** The full message text, past the display's "See more" truncation. */
+  caption: string | null;
+  imageUrl: string | null;
+  likeCount: number | null;
+  commentCount: number | null;
+  takenAt: string | null;
   firstSeenAt: string;
   firstSeenRunId: string | null;
   hashtag: string;
+  /** Other hashtags found in the post's own text, beyond the one searched. */
+  otherHashtags: string[];
 }
 
 export type Post = InstagramPost | FacebookPost;

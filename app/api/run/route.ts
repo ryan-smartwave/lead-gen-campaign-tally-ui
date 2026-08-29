@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error: "no_business",
-        message: "Add a business with at least one hashtag before running a scrape.",
+        message: "Add a campaign with at least one hashtag before running a scrape.",
       },
       { status: 400 },
     );

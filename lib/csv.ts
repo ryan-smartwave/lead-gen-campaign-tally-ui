@@ -65,6 +65,7 @@ export function postsCsv(posts: Post[]): string {
       "author",
       "username",
       "text",
+      "other_hashtags",
       "image_url",
       "like_count",
       "comment_count",
@@ -75,15 +76,16 @@ export function postsCsv(posts: Post[]): string {
       p.hashtag,
       p.id,
       p.firstSeenAt,
-      p.platform === "instagram" ? p.url : "",
+      p.url,
       p.platform === "facebook" ? p.author : "",
-      p.platform === "instagram" ? p.username : "",
-      // Prefer the real caption over the alt-text preview for Instagram.
-      p.platform === "instagram" ? (p.caption ?? p.preview) : p.text,
-      p.platform === "instagram" ? p.imageUrl : "",
-      p.platform === "instagram" ? p.likeCount : "",
-      p.platform === "instagram" ? p.commentCount : "",
-      p.platform === "instagram" ? p.takenAt : "",
+      p.username,
+      // Prefer the full captured caption over the DOM's truncated/alt text.
+      p.caption ?? (p.platform === "instagram" ? p.preview : p.text),
+      p.otherHashtags.join(" "),
+      p.imageUrl,
+      p.likeCount,
+      p.commentCount,
+      p.takenAt,
     ]),
   );
 }

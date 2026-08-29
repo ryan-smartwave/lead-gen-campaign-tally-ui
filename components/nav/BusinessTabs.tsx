@@ -22,7 +22,7 @@ export function BusinessTabs({
   if (businesses.length < 2 || businesses.length > 6) return null;
 
   return (
-    <div className="scroll-x -my-1 flex flex-nowrap gap-1.5 py-1" role="tablist" aria-label="Business">
+    <div className="scroll-x -my-1 flex flex-nowrap gap-1.5 py-1" role="tablist" aria-label="Campaign">
       {businesses.map((b) => {
         const active = b.slug === selected;
         return (

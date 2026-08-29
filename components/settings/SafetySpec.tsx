@@ -109,7 +109,7 @@ export function SafetySpec({ safety }: { safety: SafetyValues | null }) {
       )}
 
       <p className="muted text-xs">
-        Shared by every business and edited only in <span className="mono">scraper/config.json</span>,
+        Shared by every campaign and edited only in <span className="mono">scraper/config.json</span>,
         never from this app — these timings are what keeps the accounts from being flagged, so
         there is deliberately no button here that can widen them.
       </p>

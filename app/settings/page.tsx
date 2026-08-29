@@ -34,7 +34,7 @@ export default async function SettingsPage() {
       <section>
         <p className="label">Configuration</p>
         <h1 className="text-[26px] font-bold">Settings</h1>
-        <p className="muted text-[13px]">Businesses and the hashtags tracked for each.</p>
+        <p className="muted text-[13px]">Campaigns and the hashtags tracked for each.</p>
       </section>
 
       {businesses.length === 0 ? (
@@ -42,11 +42,11 @@ export default async function SettingsPage() {
           {editable ? <NewBusiness /> : null}
           <EmptyState
             glyph="◇"
-            headline="No businesses yet"
+            headline="No campaigns yet"
             hint={
               editable
                 ? "Add one above, then give it the hashtags you want tracked."
-                : "Businesses are set up on the machine that runs the scraper."
+                : "Campaigns are set up on the machine that runs the scraper."
             }
           />
         </>
@@ -65,9 +65,9 @@ export default async function SettingsPage() {
       <section className="card">
         <span className="card-title">Where data lives</span>
         <p className="muted text-[13px]">
-          Each business writes to its own folder under{" "}
+          Each campaign writes to its own folder under{" "}
           <span className="mono">scraper/data/&lt;id&gt;/</span> — separate duplicate-tracking and
-          a separate lock, so two businesses can never corrupt each other&rsquo;s counts.
+          a separate lock, so two campaigns can never corrupt each other&rsquo;s counts.
           {isDbConfigured()
             ? " Results are also mirrored to your database for viewing on other devices."
             : " No database is configured, so results are readable on this machine only."}

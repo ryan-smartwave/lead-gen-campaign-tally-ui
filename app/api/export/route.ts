@@ -17,7 +17,7 @@ export async function GET(request: Request) {
   const business = await resolveBusiness(params.get("business") ?? undefined);
 
   if (!business) {
-    return new Response("No business configured.", { status: 404 });
+    return new Response("No campaign configured.", { status: 404 });
   }
 
   const data = await getDashboard(business);

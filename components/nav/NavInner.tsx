@@ -77,7 +77,7 @@ export function NavInner({ businesses }: { businesses: Business[] }) {
       <div className="ml-auto flex items-center gap-2">
         {businesses.length > 1 ? (
           <label>
-            <span className="sr-only">Business</span>
+            <span className="sr-only">Campaign</span>
             <select
               value={selected?.slug ?? ""}
               onChange={(e) => pick(e.target.value)}
@@ -91,7 +91,7 @@ export function NavInner({ businesses }: { businesses: Business[] }) {
             </select>
           </label>
         ) : selected ? (
-          <span className="pill" title="The only business configured">
+          <span className="pill" title="The only campaign configured">
             {selected.name}
           </span>
         ) : null}

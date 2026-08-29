@@ -96,12 +96,21 @@ function mapPostRow(r: Record<string, unknown>): Post {
   };
   const numOrNull = (v: unknown) => (v === null || v === undefined ? null : Number(v));
   const isoOrNull = (v: unknown) => (v ? new Date(v as string).toISOString() : null);
+  const otherHashtags = Array.isArray(r.other_hashtags) ? (r.other_hashtags as string[]) : [];
   return r.platform === "facebook"
     ? {
         ...base,
         platform: "facebook" as const,
         author: (r.author as string) ?? null,
         text: (r.body as string) ?? null,
+        url: (r.url as string) ?? null,
+        username: (r.username as string) ?? null,
+        caption: (r.caption as string) ?? null,
+        imageUrl: (r.image_url as string) ?? null,
+        likeCount: numOrNull(r.like_count),
+        commentCount: numOrNull(r.comment_count),
+        takenAt: isoOrNull(r.taken_at),
+        otherHashtags,
       }
     : {
         ...base,
@@ -115,6 +124,7 @@ function mapPostRow(r: Record<string, unknown>): Post {
         commentCount: numOrNull(r.comment_count),
         takenAt: isoOrNull(r.taken_at),
         enrichedAt: isoOrNull(r.enriched_at),
+        otherHashtags,
       };
 }
 
@@ -127,7 +137,7 @@ export async function readPosts(
   const sql = requireDb();
   const rows = (await sql`
     select platform, hashtag, post_id, first_run_id, first_seen_at, url, preview, author, body,
-           username, caption, image_url, like_count, comment_count, taken_at, enriched_at
+           username, caption, image_url, like_count, comment_count, taken_at, enriched_at, other_hashtags
     from posts
     where business = ${business} and platform = ${platform} and hashtag = ${hashtag}
     order by first_seen_at desc, post_id desc
@@ -151,7 +161,7 @@ export async function readAllPosts(business: string): Promise<Post[]> {
   const sql = requireDb();
   const rows = (await sql`
     select platform, hashtag, post_id, first_run_id, first_seen_at, url, preview, author, body,
-           username, caption, image_url, like_count, comment_count, taken_at, enriched_at
+           username, caption, image_url, like_count, comment_count, taken_at, enriched_at, other_hashtags
     from posts
     where business = ${business}
     order by hashtag, first_seen_at desc, post_id desc
