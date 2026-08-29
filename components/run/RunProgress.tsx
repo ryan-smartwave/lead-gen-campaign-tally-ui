@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import type { RunViewState } from "@/lib/types";
 import { duration, relativeTime } from "@/lib/format";
-import { progressCounts, remainingEstimate } from "@/lib/runState";
+import { currentActivity, progressCounts, remainingEstimate } from "@/lib/runState";
 import { dangerCopy, DANGER_REMEDY } from "@/lib/dangerCopy";
 import { StatusPill } from "@/components/data/StatusPill";
 import { HashtagChecklist } from "./HashtagChecklist";
@@ -34,6 +34,14 @@ export function RunProgress({
 
   const { done, total } = progressCounts(state);
   const estimate = remainingEstimate(state);
+  const activity = currentActivity(state);
+  const activityText = activity
+    ? activity.kind === "scrolling"
+      ? `scrolling #${activity.target?.hashtag} on ${activity.target?.platform === "instagram" ? "Instagram" : "Facebook"}`
+      : activity.kind === "waiting"
+        ? `waiting — #${activity.target?.hashtag} up next`
+        : "wrapping up: enriching posts"
+    : null;
   const silentMinutes = state.lastEventAt
     ? (Date.now() - new Date(state.lastEventAt).getTime()) / 60_000
     : 0;
@@ -52,6 +60,7 @@ export function RunProgress({
         <span className="num font-semibold">
           {done} of {total} hashtags
         </span>
+        {activityText ? <span className="muted">· {activityText}</span> : null}
         {state.startedAt ? (
           <span className="muted num">running {duration(state.startedAt, state.finishedAt)}</span>
         ) : null}
@@ -114,7 +123,11 @@ export function RunProgress({
             <span className="muted">{connected ? "live" : "reconnecting…"}</span>
             {onStop ? (
               <button type="button" className="btn btn-sm" onClick={onStop}>
-                Stop after this hashtag
+                {activity?.kind === "scrolling" && activity.target
+                  ? `Stop after #${activity.target.hashtag}`
+                  : activity?.kind === "waiting" && activity.target
+                    ? `Stop before #${activity.target.hashtag}`
+                    : "Stop the run"}
               </button>
             ) : null}
           </span>

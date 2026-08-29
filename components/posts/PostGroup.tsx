@@ -116,6 +116,18 @@ export function PostGroup({
                           Open on {ig ? "Instagram" : "Facebook"} ↗
                         </a>
                       ) : null}
+                      {post.fieldSources ? (
+                        <details>
+                          <summary className="muted cursor-pointer select-none" style={{ fontSize: 11 }}>
+                            field sources
+                          </summary>
+                          <span className="muted mono" style={{ fontSize: 11, wordBreak: "break-word" }}>
+                            {Object.entries(post.fieldSources)
+                              .map(([field, source]) => `${field}: ${source}`)
+                              .join(" · ")}
+                          </span>
+                        </details>
+                      ) : null}
                     </div>
                   </div>
                 );

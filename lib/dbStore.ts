@@ -23,7 +23,8 @@ export async function readCampaigns(): Promise<Campaign[]> {
   const sql = requireDb();
   const rows = (await sql`
     select slug, name, created_at, hashtags,
-           campaign_start::text as campaign_start, campaign_end::text as campaign_end
+           campaign_start::text as campaign_start, campaign_end::text as campaign_end,
+           country, fb_location_id
     from campaigns order by name
   `) as Record<string, unknown>[];
 
@@ -34,6 +35,8 @@ export async function readCampaigns(): Promise<Campaign[]> {
     hashtags: (r.hashtags as Target[]) ?? [],
     campaignStart: (r.campaign_start as string) ?? null,
     campaignEnd: (r.campaign_end as string) ?? null,
+    country: (r.country as string) ?? "Philippines",
+    fbLocationId: (r.fb_location_id as string) ?? null,
   }));
 }
 
@@ -64,7 +67,7 @@ export async function readTallies(campaign: string): Promise<TallyRow[]> {
   const sql = requireDb();
   const rows = (await sql`
     select run_id, campaign_day::text as day, platform, hashtag,
-           posts_on_page, new_posts, fresh_posts, cumulative_unique, status
+           posts_on_page, new_posts, fresh_posts, cumulative_unique, status, duration_seconds
     from tallies
     where campaign = ${campaign}
     order by run_id asc
@@ -81,6 +84,7 @@ export async function readTallies(campaign: string): Promise<TallyRow[]> {
     freshPosts: r.fresh_posts === null || r.fresh_posts === undefined ? 0 : Number(r.fresh_posts),
     cumulativeUnique: Number(r.cumulative_unique),
     status: r.status as TallyStatus,
+    durationSeconds: r.duration_seconds === null || r.duration_seconds === undefined ? null : Number(r.duration_seconds),
   }));
 }
 
@@ -97,6 +101,10 @@ function mapPostRow(r: Record<string, unknown>): Post {
   const numOrNull = (v: unknown) => (v === null || v === undefined ? null : Number(v));
   const isoOrNull = (v: unknown) => (v ? new Date(v as string).toISOString() : null);
   const otherHashtags = Array.isArray(r.other_hashtags) ? (r.other_hashtags as string[]) : [];
+  const fieldSources =
+    r.field_sources && typeof r.field_sources === "object"
+      ? (r.field_sources as Record<string, string>)
+      : null;
   return r.platform === "facebook"
     ? {
         ...base,
@@ -111,6 +119,7 @@ function mapPostRow(r: Record<string, unknown>): Post {
         commentCount: numOrNull(r.comment_count),
         takenAt: isoOrNull(r.taken_at),
         otherHashtags,
+        fieldSources,
       }
     : {
         ...base,
@@ -125,6 +134,7 @@ function mapPostRow(r: Record<string, unknown>): Post {
         takenAt: isoOrNull(r.taken_at),
         enrichedAt: isoOrNull(r.enriched_at),
         otherHashtags,
+        fieldSources,
       };
 }
 
@@ -137,7 +147,7 @@ export async function readPosts(
   const sql = requireDb();
   const rows = (await sql`
     select platform, hashtag, post_id, first_run_id, first_seen_at, url, preview, author, body,
-           username, caption, image_url, like_count, comment_count, taken_at, enriched_at, other_hashtags
+           username, caption, image_url, like_count, comment_count, taken_at, enriched_at, other_hashtags, field_sources
     from posts
     where campaign = ${campaign} and platform = ${platform} and hashtag = ${hashtag}
     order by first_seen_at desc, post_id desc
@@ -161,7 +171,7 @@ export async function readAllPosts(campaign: string): Promise<Post[]> {
   const sql = requireDb();
   const rows = (await sql`
     select platform, hashtag, post_id, first_run_id, first_seen_at, url, preview, author, body,
-           username, caption, image_url, like_count, comment_count, taken_at, enriched_at, other_hashtags
+           username, caption, image_url, like_count, comment_count, taken_at, enriched_at, other_hashtags, field_sources
     from posts
     where campaign = ${campaign}
     order by hashtag, first_seen_at desc, post_id desc

@@ -95,6 +95,8 @@ interface RawCampaign {
   hashtags: { platform: Platform; value: string }[];
   campaignStart?: string | null;
   campaignEnd?: string | null;
+  country?: string | null;
+  fbLocationId?: string | null;
 }
 
 /** The service speaks the config file's `value`; the app uses `hashtag`. */
@@ -106,6 +108,8 @@ function toCampaign(raw: RawCampaign): Campaign {
     hashtags: (raw.hashtags ?? []).map((h) => ({ platform: h.platform, hashtag: h.value })),
     campaignStart: raw.campaignStart ?? null,
     campaignEnd: raw.campaignEnd ?? null,
+    country: raw.country ?? "Philippines",
+    fbLocationId: raw.fbLocationId ?? null,
   };
 }
 
@@ -113,12 +117,12 @@ function toServiceHashtags(hashtags: Target[]) {
   return hashtags.map((h) => ({ platform: h.platform, value: h.hashtag }));
 }
 
-export async function listBusinesses(): Promise<Campaign[]> {
+export async function listCampaigns(): Promise<Campaign[]> {
   const body = await request<{ campaigns: RawCampaign[] }>("/campaigns");
   return (body.campaigns ?? []).map(toCampaign);
 }
 
-export async function createBusiness(
+export async function createCampaign(
   name: string,
   hashtags: Target[] = [],
   dates: { campaignStart?: string | null; campaignEnd?: string | null } = {},
@@ -135,13 +139,15 @@ export async function createBusiness(
   return toCampaign(body.campaign);
 }
 
-export async function updateBusiness(
+export async function updateCampaign(
   slug: string,
   patch: {
     name?: string;
     hashtags?: Target[];
     campaignStart?: string | null;
     campaignEnd?: string | null;
+    country?: string | null;
+    fbLocationId?: string | null;
   },
 ): Promise<Campaign> {
   const body = await request<{ campaign: RawCampaign }>(`/campaigns/${encodeURIComponent(slug)}`, {
@@ -151,12 +157,14 @@ export async function updateBusiness(
       ...(patch.hashtags !== undefined ? { hashtags: toServiceHashtags(patch.hashtags) } : {}),
       ...(patch.campaignStart !== undefined ? { campaignStart: patch.campaignStart } : {}),
       ...(patch.campaignEnd !== undefined ? { campaignEnd: patch.campaignEnd } : {}),
+      ...(patch.country !== undefined ? { country: patch.country } : {}),
+      ...(patch.fbLocationId !== undefined ? { fbLocationId: patch.fbLocationId } : {}),
     }),
   });
   return toCampaign(body.campaign);
 }
 
-export async function deleteBusiness(slug: string): Promise<void> {
+export async function deleteCampaign(slug: string): Promise<void> {
   await request(`/campaigns/${encodeURIComponent(slug)}`, { method: "DELETE" });
 }
 

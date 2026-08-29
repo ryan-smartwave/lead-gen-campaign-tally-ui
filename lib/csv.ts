@@ -38,6 +38,7 @@ export function talliesCsv(rows: TallyRow[], runs: Run[]): string {
       "fresh_posts",
       "cumulative_unique",
       "status",
+      "duration_seconds",
     ],
     rows.map((r) => [
       r.day,
@@ -50,6 +51,7 @@ export function talliesCsv(rows: TallyRow[], runs: Run[]): string {
       r.freshPosts,
       r.cumulativeUnique,
       r.status,
+      r.durationSeconds,
     ]),
   );
 }
@@ -70,6 +72,7 @@ export function postsCsv(posts: Post[]): string {
       "like_count",
       "comment_count",
       "taken_at",
+      "field_sources",
     ],
     posts.map((p) => [
       p.platform,
@@ -86,6 +89,7 @@ export function postsCsv(posts: Post[]): string {
       p.likeCount,
       p.commentCount,
       p.takenAt,
+      p.fieldSources ? JSON.stringify(p.fieldSources) : "",
     ]),
   );
 }

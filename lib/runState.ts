@@ -7,7 +7,7 @@
  * resumability story, and it lives here rather than in a component.
  */
 
-import type { RunEvent, RunViewState, TargetProgress } from "./types";
+import type { RunEvent, RunViewState, Target, TargetProgress } from "./types";
 import { targetKey } from "./types";
 
 export function initialRunState(): RunViewState {
@@ -67,6 +67,7 @@ export function reduceRunEvent(state: RunViewState, event: RunEvent): RunViewSta
         newCount: event.newCount,
         freshCount: event.freshCount ?? event.newCount,
         cumulative: event.cumulative,
+        durationSeconds: event.durationSeconds,
       };
       break;
     }
@@ -134,6 +135,26 @@ export function progressCounts(state: RunViewState): {
   ).length;
   const total = state.targets.length || values.length;
   return { done, total, remaining: Math.max(0, total - done) };
+}
+
+/**
+ * What the run is doing RIGHT NOW, for the summary line and the stop button:
+ * the hashtag being scrolled, the gap (with what's next), the enrichment
+ * tail once every target is finished, or nothing when the run is over.
+ */
+export function currentActivity(
+  state: RunViewState,
+): { kind: "scrolling" | "waiting" | "finishing"; target: Target | null } | null {
+  if (state.status !== "running") return null;
+  for (const target of state.targets) {
+    if (state.results[targetKey(target)]?.state === "active") {
+      return { kind: "scrolling", target };
+    }
+  }
+  if (state.waitingNext) return { kind: "waiting", target: state.waitingNext };
+  const { remaining } = progressCounts(state);
+  if (remaining === 0 && state.targets.length > 0) return { kind: "finishing", target: null };
+  return null;
 }
 
 /**

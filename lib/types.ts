@@ -31,6 +31,14 @@ export interface Campaign {
    */
   campaignStart: string | null;
   campaignEnd: string | null;
+  /** Reporting metadata; every campaign defaults to the Philippines. */
+  country: string;
+  /**
+   * Optional Facebook geo place id. When set, FB searches carry FB's own
+   * tagged-location filter (city/metro granularity — country ids are not
+   * honored). Instagram has no location facility at all.
+   */
+  fbLocationId: string | null;
 }
 
 export interface Run {
@@ -69,6 +77,8 @@ export interface TallyRow {
   freshPosts: number;
   cumulativeUnique: number;
   status: TallyStatus;
+  /** How long the visit took, seconds; null on rows before this existed. */
+  durationSeconds: number | null;
 }
 
 /**
@@ -99,6 +109,12 @@ export interface InstagramPost {
   hashtag: string;
   /** Other hashtags found in the post's own text, beyond the one searched. */
   otherHashtags: string[];
+  /**
+   * Per-field provenance: which passive source supplied each value, or
+   * "missed:<sources tried>" for nulls. Null on rows recorded before this
+   * existed.
+   */
+  fieldSources: Record<string, string> | null;
 }
 
 export interface FacebookPost {
@@ -125,6 +141,8 @@ export interface FacebookPost {
   hashtag: string;
   /** Other hashtags found in the post's own text, beyond the one searched. */
   otherHashtags: string[];
+  /** Per-field provenance; see InstagramPost.fieldSources. */
+  fieldSources: Record<string, string> | null;
 }
 
 export type Post = InstagramPost | FacebookPost;
@@ -197,6 +215,8 @@ export type RunEvent =
       freshCount?: number;
       cumulative: number;
       status: "ok" | "empty";
+      /** Seconds the visit took; absent on streams from older scrapers. */
+      durationSeconds?: number;
     })
   | (EventBase & {
       type: "hashtag_error";
@@ -261,6 +281,7 @@ export interface TargetProgress {
   freshCount?: number;
   cumulative?: number;
   message?: string;
+  durationSeconds?: number;
 }
 
 /** Stable key for a target across events, results maps, and DB rows. */

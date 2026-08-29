@@ -1,6 +1,6 @@
 import type { RunViewState, TargetProgressState } from "@/lib/types";
 import { targetKey } from "@/lib/types";
-import { num } from "@/lib/format";
+import { fmtSeconds, num } from "@/lib/format";
 import { PlatformIcon } from "@/components/data/PlatformIcon";
 
 const GLYPH: Record<TargetProgressState, string> = {
@@ -60,7 +60,9 @@ export function HashtagChecklist({ state }: { state: RunViewState }) {
                     progress.freshCount !== undefined && progress.freshCount !== progress.newCount
                       ? ` (${num(progress.freshCount)} in-campaign)`
                       : ""
-                  } · ${num(progress.cumulative ?? 0)} total`
+                  } · ${num(progress.cumulative ?? 0)} total${
+                    fmtSeconds(progress.durationSeconds) ? ` · ${fmtSeconds(progress.durationSeconds)}` : ""
+                  }`
                 : progress.state === "active"
                   ? "loading and scrolling…"
                   : progress.state === "error"

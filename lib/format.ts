@@ -96,3 +96,12 @@ export function num(n: number): string {
 export function delta(n: number): string {
   return n > 0 ? `+${num(n)}` : num(n);
 }
+
+/** Compact duration from seconds: "48s", "14m", "1h 22m". */
+export function fmtSeconds(seconds: number | null | undefined): string | null {
+  if (seconds == null || Number.isNaN(seconds)) return null;
+  if (seconds < 60) return `${Math.max(0, Math.round(seconds))}s`;
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return `${minutes}m`;
+  return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
+}

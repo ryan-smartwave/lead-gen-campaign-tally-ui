@@ -23,11 +23,13 @@ export async function PATCH(
   const { slug } = await params;
   const body = await request.json().catch(() => ({}));
   try {
-    const campaign = await scraper.updateBusiness(slug, {
+    const campaign = await scraper.updateCampaign(slug, {
       ...(typeof body?.name === "string" ? { name: body.name } : {}),
       ...(Array.isArray(body?.hashtags) ? { hashtags: body.hashtags } : {}),
       ...(body?.campaignStart !== undefined ? { campaignStart: body.campaignStart } : {}),
       ...(body?.campaignEnd !== undefined ? { campaignEnd: body.campaignEnd } : {}),
+      ...(body?.country !== undefined ? { country: body.country } : {}),
+      ...(body?.fbLocationId !== undefined ? { fbLocationId: body.fbLocationId } : {}),
     });
     return NextResponse.json({ campaign });
   } catch (err) {
@@ -45,7 +47,7 @@ export async function DELETE(
 ) {
   const { slug } = await params;
   try {
-    await scraper.deleteBusiness(slug);
+    await scraper.deleteCampaign(slug);
     return NextResponse.json({
       deleted: slug,
       note: "Collected results were left in place; re-creating this campaign with the same id restores its history.",

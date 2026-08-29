@@ -27,6 +27,8 @@ export function CampaignEditor({
   // A native date input works in "" (empty) terms; the stored field is null.
   const [campaignStart, setCampaignStart] = useState(campaign.campaignStart ?? "");
   const [campaignEnd, setCampaignEnd] = useState(campaign.campaignEnd ?? "");
+  const [country, setCountry] = useState(campaign.country ?? "Philippines");
+  const [fbLocationId, setFbLocationId] = useState(campaign.fbLocationId ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -36,7 +38,9 @@ export function CampaignEditor({
     name !== campaign.name ||
     JSON.stringify(hashtags) !== JSON.stringify(campaign.hashtags) ||
     (campaignStart || null) !== campaign.campaignStart ||
-    (campaignEnd || null) !== campaign.campaignEnd;
+    (campaignEnd || null) !== campaign.campaignEnd ||
+    country !== (campaign.country ?? "Philippines") ||
+    (fbLocationId || null) !== campaign.fbLocationId;
 
   function addHashtag() {
     // Accept a pasted "#tag" or a full URL and keep just the tag.
@@ -68,6 +72,8 @@ export function CampaignEditor({
           hashtags,
           campaignStart: campaignStart || null,
           campaignEnd: campaignEnd || null,
+          country: country || "Philippines",
+          fbLocationId: fbLocationId || null,
         }),
       });
       const body = await res.json();
@@ -153,6 +159,43 @@ export function CampaignEditor({
           Campaign window: {campaign.campaignStart ?? "open"} → {campaign.campaignEnd ?? "open"}
         </p>
       ) : null}
+
+      {editable ? (
+        <div className="stack gap-1">
+          <span className="label">Location</span>
+          <div className="row gap-2">
+            <label className="stack gap-1">
+              <span className="muted text-xs">Country</span>
+              <input
+                className="input input-sm w-[180px]"
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+              />
+            </label>
+            <label className="stack gap-1">
+              <span className="muted text-xs">Facebook place id (optional)</span>
+              <input
+                className="input input-sm w-[200px]"
+                placeholder="e.g. 103975476306462"
+                value={fbLocationId}
+                onChange={(e) => setFbLocationId(e.target.value.trim())}
+              />
+            </label>
+          </div>
+          <p className="muted text-xs">
+            Country is reporting metadata. The place id, when set, narrows Facebook searches to
+            posts tagged at that city or metro (Facebook only supports city-level location
+            filtering, and Instagram search has no location filter at all — Instagram targeting
+            comes from the hashtags themselves). Find an id in the link behind any post&rsquo;s
+            city tag on Facebook.
+          </p>
+        </div>
+      ) : (
+        <p className="muted text-[13px]">
+          Country: {campaign.country ?? "Philippines"}
+          {campaign.fbLocationId ? ` · FB location filter ${campaign.fbLocationId}` : ""}
+        </p>
+      )}
 
       <div className="stack gap-2">
         <span className="label">Hashtags ({hashtags.length})</span>
