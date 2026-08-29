@@ -18,8 +18,8 @@ export type RunStatus =
 
 export type Target = { platform: Platform; hashtag: string };
 
-/** One tracked business. Several can be run from the same installation. */
-export interface Business {
+/** One tracked campaign. Several can be run from the same installation. */
+export interface Campaign {
   slug: string;
   name: string;
   createdAt: string | null;
@@ -35,9 +35,10 @@ export interface Business {
 
 export interface Run {
   id: string;
-  /** Which business this run belongs to. */
-  business: string;
+  /** Which campaign (slug) this run belongs to. */
   campaign: string;
+  /** The campaign's display name as it was at run time. */
+  campaignName: string;
   /** Campaign day (Asia/Manila), YYYY-MM-DD. */
   day: string;
   startedAt: string;
@@ -61,7 +62,7 @@ export interface TallyRow {
   postsOnPage: number | null;
   newPosts: number;
   /**
-   * New posts that also fall inside the business's campaign window. Equals
+   * New posts that also fall inside the campaign's campaign window. Equals
    * newPosts when no window is configured. Older rows (before this column
    * existed) report 0.
    */

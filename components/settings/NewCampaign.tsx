@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-/** Adds a business. Its hashtags are added afterwards, in its own editor. */
-export function NewBusiness() {
+/** Adds a campaign. Its hashtags are added afterwards, in its own editor. */
+export function NewCampaign() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
@@ -15,7 +15,7 @@ export function NewBusiness() {
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch("/api/businesses", {
+      const res = await fetch("/api/campaigns", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, hashtags: [] }),

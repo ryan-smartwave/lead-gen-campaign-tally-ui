@@ -1,18 +1,18 @@
-import type { Business, Platform, Post, Run, Series, TallyRow } from "./types";
+import type { Campaign, Platform, Post, Run, Series, TallyRow } from "./types";
 import * as remote from "./dbStore";
 import { isDbConfigured } from "./db";
 import { buildSeries, dailyNewPosts, talliedTotals } from "./series";
 import { campaignDay } from "./format";
 
 /**
- * The app's read API, scoped to one business.
+ * The app's read API, scoped to one campaign.
  *
  * Everything is read from Postgres. The scraper service owns writing — it runs
  * the scrapes and stores the results — so this app never touches the filesystem
  * and has no path coupling to the scraper repository. It also means the hosted
  * copy and the local copy read exactly the same data by exactly the same code.
  *
- * Business definitions live in the scraper's own files, but the service mirrors
+ * Campaign definitions live in the scraper's own files, but the service mirrors
  * them into Postgres whenever they change, so they are read from here too.
  */
 
@@ -22,25 +22,25 @@ export function dataSource(): DataSource {
   return isDbConfigured() ? "database" : "none";
 }
 
-export async function getBusinesses(): Promise<Business[]> {
+export async function getCampaigns(): Promise<Campaign[]> {
   if (!isDbConfigured()) return [];
   try {
-    return await remote.readBusinesses();
+    return await remote.readCampaigns();
   } catch {
     return [];
   }
 }
 
-/** Resolves a requested slug to a real business, falling back to the first. */
-export async function resolveBusiness(slug?: string): Promise<Business | null> {
-  const all = await getBusinesses();
+/** Resolves a requested slug to a real campaign, falling back to the first. */
+export async function resolveCampaign(slug?: string): Promise<Campaign | null> {
+  const all = await getCampaigns();
   if (all.length === 0) return null;
   return all.find((b) => b.slug === slug) ?? all[0];
 }
 
 export interface DashboardData {
   source: DataSource;
-  business: Business;
+  campaign: Campaign;
   runs: Run[];
   latestRun: Run | null;
   rows: TallyRow[];
@@ -55,16 +55,16 @@ export interface DashboardData {
   flags: Record<string, "aborted" | "budget_stopped">;
 }
 
-export async function getDashboard(business: Business): Promise<DashboardData> {
+export async function getDashboard(campaign: Campaign): Promise<DashboardData> {
   const source = dataSource();
   const today = campaignDay();
 
   const [rows, runs, distinctPosts] =
     source === "database"
       ? await Promise.all([
-          remote.readTallies(business.slug),
-          remote.readRuns(business.slug),
-          remote.countDistinctPosts(business.slug),
+          remote.readTallies(campaign.slug),
+          remote.readRuns(campaign.slug),
+          remote.countDistinctPosts(campaign.slug),
         ])
       : [[] as TallyRow[], [] as Run[], 0];
 
@@ -79,7 +79,7 @@ export async function getDashboard(business: Business): Promise<DashboardData> {
 
   return {
     source,
-    business,
+    campaign,
     runs,
     latestRun: runs[0] ?? null,
     rows,
@@ -87,7 +87,7 @@ export async function getDashboard(business: Business): Promise<DashboardData> {
     daily: dailyNewPosts(rows, today),
     tallied: talliedTotals(series),
     distinctPosts,
-    configuredOnly: business.hashtags.filter((h) => !seen.has(`${h.platform}:${h.hashtag}`)),
+    configuredOnly: campaign.hashtags.filter((h) => !seen.has(`${h.platform}:${h.hashtag}`)),
     ranToday: runs.some((r) => r.day === today),
     flags,
   };
@@ -100,12 +100,12 @@ export interface RunDetail {
   totals: { newPosts: number };
 }
 
-export async function getRun(business: Business, runId: string): Promise<RunDetail | null> {
+export async function getRun(campaign: Campaign, runId: string): Promise<RunDetail | null> {
   if (dataSource() === "none") return null;
 
   const [runs, allRows] = await Promise.all([
-    remote.readRuns(business.slug),
-    remote.readTallies(business.slug),
+    remote.readRuns(campaign.slug),
+    remote.readTallies(campaign.slug),
   ]);
 
   const run = runs.find((r) => r.id === runId);
@@ -117,7 +117,7 @@ export async function getRun(business: Business, runId: string): Promise<RunDeta
   return {
     run,
     rows,
-    neverVisited: business.hashtags.filter((h) => !visited.has(`${h.platform}:${h.hashtag}`)),
+    neverVisited: campaign.hashtags.filter((h) => !visited.has(`${h.platform}:${h.hashtag}`)),
     totals: { newPosts: rows.reduce((sum, r) => sum + r.newPosts, 0) },
   };
 }

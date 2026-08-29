@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import * as scraper from "@/lib/scraperClient";
-import { resolveBusiness } from "@/lib/data";
+import { resolveCampaign } from "@/lib/data";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -14,14 +14,14 @@ export const dynamic = "force-dynamic";
  */
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
-  const business = await resolveBusiness(
-    typeof body?.business === "string" ? body.business : undefined,
+  const campaign = await resolveCampaign(
+    typeof body?.campaign === "string" ? body.campaign : undefined,
   );
 
-  if (!business) {
+  if (!campaign) {
     return NextResponse.json(
       {
-        error: "no_business",
+        error: "no_campaign",
         message: "Add a campaign with at least one hashtag before running a scrape.",
       },
       { status: 400 },
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const started = await scraper.startRun(business.slug, body?.force === true);
+    const started = await scraper.startRun(campaign.slug, body?.force === true);
     return NextResponse.json(started, { status: 202 });
   } catch (err) {
     if (err instanceof scraper.ScraperUnavailableError) {

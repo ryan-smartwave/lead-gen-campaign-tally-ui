@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import * as scraper from "@/lib/scraperClient";
-import { resolveBusiness } from "@/lib/data";
+import { resolveCampaign } from "@/lib/data";
 import { campaignDay } from "@/lib/format";
 import type { Check, Preflight } from "@/lib/types";
 
@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
  * Always answers 200: this endpoint reports problems, it does not fail.
  */
 export async function GET(request: Request) {
-  const requested = new URL(request.url).searchParams.get("business") ?? undefined;
+  const requested = new URL(request.url).searchParams.get("campaign") ?? undefined;
 
   let service: scraper.ServicePreflight | null = null;
   let unreachable: string | null = null;
@@ -27,7 +27,7 @@ export async function GET(request: Request) {
     unreachable = (err as Error).message;
   }
 
-  const business = await resolveBusiness(requested);
+  const campaign = await resolveCampaign(requested);
   const checks: Check[] = [];
 
   if (unreachable || !service) {
@@ -71,8 +71,8 @@ export async function GET(request: Request) {
       id: "today",
       status: today?.state === "warn" ? "warn" : "pass",
       label: "Once per day",
-      detail: business
-        ? `${business.name}: ${today?.detail ?? "unknown"}`
+      detail: campaign
+        ? `${campaign.name}: ${today?.detail ?? "unknown"}`
         : (today?.detail ?? `no run yet today (${campaignDay()})`),
     });
 

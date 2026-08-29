@@ -2,41 +2,41 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Business, Platform, Target } from "@/lib/types";
+import type { Campaign, Platform, Target } from "@/lib/types";
 import { PlatformIcon } from "@/components/data/PlatformIcon";
 
 /**
- * Edits one business: its name and its hashtag list.
+ * Edits one campaign: its name and its hashtag list.
  *
  * Saves write to the scraper's own files, so the CLI and the app always read
  * the same definitions. Safety settings are deliberately absent here — those
  * are the anti-ban limits and stay file-only.
  */
-export function BusinessEditor({
-  business,
+export function CampaignEditor({
+  campaign,
   editable,
 }: {
-  business: Business;
+  campaign: Campaign;
   editable: boolean;
 }) {
   const router = useRouter();
-  const [name, setName] = useState(business.name);
-  const [hashtags, setHashtags] = useState<Target[]>(business.hashtags);
+  const [name, setName] = useState(campaign.name);
+  const [hashtags, setHashtags] = useState<Target[]>(campaign.hashtags);
   const [platform, setPlatform] = useState<Platform>("instagram");
   const [draft, setDraft] = useState("");
   // A native date input works in "" (empty) terms; the stored field is null.
-  const [campaignStart, setCampaignStart] = useState(business.campaignStart ?? "");
-  const [campaignEnd, setCampaignEnd] = useState(business.campaignEnd ?? "");
+  const [campaignStart, setCampaignStart] = useState(campaign.campaignStart ?? "");
+  const [campaignEnd, setCampaignEnd] = useState(campaign.campaignEnd ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const dirty =
-    name !== business.name ||
-    JSON.stringify(hashtags) !== JSON.stringify(business.hashtags) ||
-    (campaignStart || null) !== business.campaignStart ||
-    (campaignEnd || null) !== business.campaignEnd;
+    name !== campaign.name ||
+    JSON.stringify(hashtags) !== JSON.stringify(campaign.hashtags) ||
+    (campaignStart || null) !== campaign.campaignStart ||
+    (campaignEnd || null) !== campaign.campaignEnd;
 
   function addHashtag() {
     // Accept a pasted "#tag" or a full URL and keep just the tag.
@@ -60,7 +60,7 @@ export function BusinessEditor({
     setError(null);
     setSaved(false);
     try {
-      const res = await fetch(`/api/businesses/${encodeURIComponent(business.slug)}`, {
+      const res = await fetch(`/api/campaigns/${encodeURIComponent(campaign.slug)}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -87,7 +87,7 @@ export function BusinessEditor({
   async function remove() {
     setBusy(true);
     try {
-      await fetch(`/api/businesses/${encodeURIComponent(business.slug)}`, { method: "DELETE" });
+      await fetch(`/api/campaigns/${encodeURIComponent(campaign.slug)}`, { method: "DELETE" });
       router.refresh();
       router.push("/settings");
     } finally {
@@ -98,10 +98,10 @@ export function BusinessEditor({
   return (
     <section className="card">
       <div className="row justify-between">
-        <span className="card-title">{business.name}</span>
+        <span className="card-title">{campaign.name}</span>
         <span className="row gap-2">
-          <span className="muted mono text-xs">{business.slug}</span>
-          <a href={`/?b=${encodeURIComponent(business.slug)}`} className="text-[13px] font-semibold">
+          <span className="muted mono text-xs">{campaign.slug}</span>
+          <a href={`/?b=${encodeURIComponent(campaign.slug)}`} className="text-[13px] font-semibold">
             View dashboard →
           </a>
         </span>
@@ -148,9 +148,9 @@ export function BusinessEditor({
             window. Posts of unknown age still count. Leave blank to count every new post.
           </p>
         </div>
-      ) : business.campaignStart || business.campaignEnd ? (
+      ) : campaign.campaignStart || campaign.campaignEnd ? (
         <p className="muted text-[13px]">
-          Campaign window: {business.campaignStart ?? "open"} → {business.campaignEnd ?? "open"}
+          Campaign window: {campaign.campaignStart ?? "open"} → {campaign.campaignEnd ?? "open"}
         </p>
       ) : null}
 

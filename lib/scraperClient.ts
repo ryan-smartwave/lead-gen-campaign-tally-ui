@@ -1,4 +1,4 @@
-import type { Business, Platform, Target } from "./types";
+import type { Campaign, Platform, Target } from "./types";
 
 /**
  * Client for the scraper service.
@@ -67,7 +67,7 @@ export interface ServiceHealth {
   campaignDay: string;
   database: "configured" | "missing";
   running: boolean;
-  businesses: number;
+  campaigns: number;
   mcpEndpoint: string | null;
   configError: string | null;
 }
@@ -86,9 +86,9 @@ export async function serviceReachable(): Promise<boolean> {
   }
 }
 
-/* ---------------- businesses ---------------- */
+/* ---------------- campaigns ---------------- */
 
-interface RawBusiness {
+interface RawCampaign {
   slug: string;
   name: string;
   createdAt: string | null;
@@ -98,7 +98,7 @@ interface RawBusiness {
 }
 
 /** The service speaks the config file's `value`; the app uses `hashtag`. */
-function toBusiness(raw: RawBusiness): Business {
+function toCampaign(raw: RawCampaign): Campaign {
   return {
     slug: raw.slug,
     name: raw.name,
@@ -113,17 +113,17 @@ function toServiceHashtags(hashtags: Target[]) {
   return hashtags.map((h) => ({ platform: h.platform, value: h.hashtag }));
 }
 
-export async function listBusinesses(): Promise<Business[]> {
-  const body = await request<{ businesses: RawBusiness[] }>("/businesses");
-  return (body.businesses ?? []).map(toBusiness);
+export async function listBusinesses(): Promise<Campaign[]> {
+  const body = await request<{ campaigns: RawCampaign[] }>("/campaigns");
+  return (body.campaigns ?? []).map(toCampaign);
 }
 
 export async function createBusiness(
   name: string,
   hashtags: Target[] = [],
   dates: { campaignStart?: string | null; campaignEnd?: string | null } = {},
-): Promise<Business> {
-  const body = await request<{ business: RawBusiness }>("/businesses", {
+): Promise<Campaign> {
+  const body = await request<{ campaign: RawCampaign }>("/campaigns", {
     method: "POST",
     body: JSON.stringify({
       name,
@@ -132,7 +132,7 @@ export async function createBusiness(
       ...(dates.campaignEnd !== undefined ? { campaignEnd: dates.campaignEnd } : {}),
     }),
   });
-  return toBusiness(body.business);
+  return toCampaign(body.campaign);
 }
 
 export async function updateBusiness(
@@ -143,8 +143,8 @@ export async function updateBusiness(
     campaignStart?: string | null;
     campaignEnd?: string | null;
   },
-): Promise<Business> {
-  const body = await request<{ business: RawBusiness }>(`/businesses/${encodeURIComponent(slug)}`, {
+): Promise<Campaign> {
+  const body = await request<{ campaign: RawCampaign }>(`/campaigns/${encodeURIComponent(slug)}`, {
     method: "PATCH",
     body: JSON.stringify({
       ...(patch.name !== undefined ? { name: patch.name } : {}),
@@ -153,17 +153,17 @@ export async function updateBusiness(
       ...(patch.campaignEnd !== undefined ? { campaignEnd: patch.campaignEnd } : {}),
     }),
   });
-  return toBusiness(body.business);
+  return toCampaign(body.campaign);
 }
 
 export async function deleteBusiness(slug: string): Promise<void> {
-  await request(`/businesses/${encodeURIComponent(slug)}`, { method: "DELETE" });
+  await request(`/campaigns/${encodeURIComponent(slug)}`, { method: "DELETE" });
 }
 
 /* ---------------- preflight and runs ---------------- */
 
 export type BlockedBy =
-  | "no_business"
+  | "no_campaign"
   | "no_hashtags"
   | "db_not_configured"
   | "already_running"
@@ -177,31 +177,31 @@ export interface ServicePreflight {
   blockedBy: BlockedBy;
   overridable: boolean;
   campaignDay: string;
-  business: { slug: string; name: string; hashtags: { platform: Platform; value: string }[] } | null;
-  businesses: { slug: string; name: string; hashtags: number }[];
+  campaign: { slug: string; name: string; hashtags: { platform: Platform; value: string }[] } | null;
+  campaigns: { slug: string; name: string; hashtags: number }[];
   checks: Record<string, { state: string; detail: string; hint?: string | null }>;
   safety?: Record<string, number | number[] | boolean>;
 }
 
-export async function preflight(business?: string): Promise<ServicePreflight> {
-  const qs = business ? `?business=${encodeURIComponent(business)}` : "";
+export async function preflight(campaign?: string): Promise<ServicePreflight> {
+  const qs = campaign ? `?campaign=${encodeURIComponent(campaign)}` : "";
   return request<ServicePreflight>(`/preflight${qs}`, { timeoutMs: 8000 });
 }
 
 export interface StartedRun {
   runId: string;
   startedAt: string;
-  business: string;
   campaign: string;
+  campaignName: string;
   targets: Target[];
   budgetMinutes: number;
   store: string;
 }
 
-export async function startRun(business: string, force = false): Promise<StartedRun> {
+export async function startRun(campaign: string, force = false): Promise<StartedRun> {
   return request<StartedRun>("/runs", {
     method: "POST",
-    body: JSON.stringify({ business, force }),
+    body: JSON.stringify({ campaign, force }),
     timeoutMs: 60_000, // opening the run row can wake a sleeping database
   });
 }
@@ -213,7 +213,7 @@ export async function stopRun(): Promise<{ stopping?: boolean; cleared?: boolean
 export interface RunSnapshot {
   active: boolean;
   runId: string | null;
-  business: string | null;
+  campaign: string | null;
   startedAt: string | null;
   firstSeq: number;
   lastSeq: number;

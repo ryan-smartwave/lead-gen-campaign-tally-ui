@@ -1,29 +1,29 @@
 import Link from "next/link";
-import type { Business } from "@/lib/types";
+import type { Campaign } from "@/lib/types";
 
 /**
- * One-click switching between businesses, shown on the business-scoped pages.
+ * One-click switching between campaigns, shown on the campaign-scoped pages.
  *
  * A dropdown hides the roster; an agency running several campaigns wants to
  * hop between them without hunting. Server-rendered plain links so the choice
- * stays in the URL and a shared link shows the same business. Hidden for a
- * single business (nothing to switch) and past six (the nav select scales
+ * stays in the URL and a shared link shows the same campaign. Hidden for a
+ * single campaign (nothing to switch) and past six (the nav select scales
  * better than a wall of tabs).
  */
-export function BusinessTabs({
-  businesses,
+export function CampaignTabs({
+  campaigns,
   selected,
   basePath,
 }: {
-  businesses: Business[];
+  campaigns: Campaign[];
   selected: string;
   basePath: string;
 }) {
-  if (businesses.length < 2 || businesses.length > 6) return null;
+  if (campaigns.length < 2 || campaigns.length > 6) return null;
 
   return (
     <div className="scroll-x -my-1 flex flex-nowrap gap-1.5 py-1" role="tablist" aria-label="Campaign">
-      {businesses.map((b) => {
+      {campaigns.map((b) => {
         const active = b.slug === selected;
         return (
           <Link

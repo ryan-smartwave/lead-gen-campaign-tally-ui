@@ -1,9 +1,9 @@
-import { getBusinesses } from "@/lib/data";
+import { getCampaigns } from "@/lib/data";
 import { canRunScrapes } from "@/lib/capability";
 import { isDbConfigured } from "@/lib/db";
 import * as scraper from "@/lib/scraperClient";
-import { BusinessEditor } from "@/components/settings/BusinessEditor";
-import { NewBusiness } from "@/components/settings/NewBusiness";
+import { CampaignEditor } from "@/components/settings/CampaignEditor";
+import { NewCampaign } from "@/components/settings/NewCampaign";
 import { SafetySpec } from "@/components/settings/SafetySpec";
 import { EmptyState } from "@/components/ui/EmptyState";
 
@@ -23,8 +23,8 @@ async function getSafetySpec() {
 export default async function SettingsPage() {
   // Editable exactly when the scraper service is reachable: it owns the config
   // files, so without it there is nothing to write to.
-  const [businesses, editable, safety] = await Promise.all([
-    getBusinesses(),
+  const [campaigns, editable, safety] = await Promise.all([
+    getCampaigns(),
     canRunScrapes(),
     getSafetySpec(),
   ]);
@@ -37,9 +37,9 @@ export default async function SettingsPage() {
         <p className="muted text-[13px]">Campaigns and the hashtags tracked for each.</p>
       </section>
 
-      {businesses.length === 0 ? (
+      {campaigns.length === 0 ? (
         <>
-          {editable ? <NewBusiness /> : null}
+          {editable ? <NewCampaign /> : null}
           <EmptyState
             glyph="◇"
             headline="No campaigns yet"
@@ -52,11 +52,11 @@ export default async function SettingsPage() {
         </>
       ) : (
         <>
-          {businesses.map((business) => (
-            <BusinessEditor key={business.slug} business={business} editable={editable} />
+          {campaigns.map((campaign) => (
+            <CampaignEditor key={campaign.slug} campaign={campaign} editable={editable} />
           ))}
-          {/* Below the roster: adding a business is rare, editing is routine. */}
-          {editable ? <NewBusiness /> : null}
+          {/* Below the roster: adding a campaign is rare, editing is routine. */}
+          {editable ? <NewCampaign /> : null}
         </>
       )}
 

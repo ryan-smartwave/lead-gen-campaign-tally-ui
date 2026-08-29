@@ -15,7 +15,7 @@ function fail(err: unknown) {
   );
 }
 
-/** Renames a business and/or replaces its hashtag list. */
+/** Renames a campaign and/or replaces its hashtag list. */
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ slug: string }> },
@@ -23,13 +23,13 @@ export async function PATCH(
   const { slug } = await params;
   const body = await request.json().catch(() => ({}));
   try {
-    const business = await scraper.updateBusiness(slug, {
+    const campaign = await scraper.updateBusiness(slug, {
       ...(typeof body?.name === "string" ? { name: body.name } : {}),
       ...(Array.isArray(body?.hashtags) ? { hashtags: body.hashtags } : {}),
       ...(body?.campaignStart !== undefined ? { campaignStart: body.campaignStart } : {}),
       ...(body?.campaignEnd !== undefined ? { campaignEnd: body.campaignEnd } : {}),
     });
-    return NextResponse.json({ business });
+    return NextResponse.json({ campaign });
   } catch (err) {
     return fail(err);
   }
@@ -37,7 +37,7 @@ export async function PATCH(
 
 /**
  * Removes the definition. Collected results stay in the database, so
- * re-creating the business with the same id picks its history back up.
+ * re-creating the campaign with the same id picks its history back up.
  */
 export async function DELETE(
   _request: Request,

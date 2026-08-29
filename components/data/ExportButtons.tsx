@@ -2,9 +2,9 @@
  * CSV downloads. Plain links, so the browser handles saving and they work with
  * a long-press on a phone; the route sets Content-Disposition.
  */
-export function ExportButtons({ business, hasPosts }: { business: string; hasPosts: boolean }) {
+export function ExportButtons({ campaign, hasPosts }: { campaign: string; hasPosts: boolean }) {
   const href = (kind: string) =>
-    `/api/export?kind=${kind}&business=${encodeURIComponent(business)}`;
+    `/api/export?kind=${kind}&campaign=${encodeURIComponent(campaign)}`;
 
   return (
     <section className="card">

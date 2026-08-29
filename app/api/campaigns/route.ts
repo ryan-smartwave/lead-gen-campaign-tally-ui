@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import * as scraper from "@/lib/scraperClient";
-import { getBusinesses } from "@/lib/data";
+import { getCampaigns } from "@/lib/data";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * Businesses and their hashtag lists.
+ * Campaigns and their hashtag lists.
  *
  * Reads come from Postgres, which the service mirrors on every change, so the
  * hosted copy works too. Writes go to the service, which owns the config files —
@@ -17,13 +17,13 @@ export const dynamic = "force-dynamic";
  */
 export async function GET() {
   const reachable = await scraper.serviceReachable();
-  return NextResponse.json({ businesses: await getBusinesses(), editable: reachable });
+  return NextResponse.json({ campaigns: await getCampaigns(), editable: reachable });
 }
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
   try {
-    const business = await scraper.createBusiness(
+    const campaign = await scraper.createBusiness(
       typeof body?.name === "string" ? body.name : "",
       Array.isArray(body?.hashtags) ? body.hashtags : [],
       {
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
         ...(body?.campaignEnd !== undefined ? { campaignEnd: body.campaignEnd } : {}),
       },
     );
-    return NextResponse.json({ business });
+    return NextResponse.json({ campaign });
   } catch (err) {
     if (err instanceof scraper.ScraperUnavailableError) {
       return NextResponse.json({ error: "service_unavailable", message: err.message }, { status: 503 });

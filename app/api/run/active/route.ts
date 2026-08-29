@@ -21,7 +21,7 @@ export async function GET() {
     return NextResponse.json({
       active: false,
       runId: null,
-      business: null,
+      campaign: null,
       startedAt: null,
       firstSeq: 0,
       lastSeq: 0,

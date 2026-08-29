@@ -13,14 +13,14 @@ export function RunLauncher({
   canRun,
   local = false,
   ranToday,
-  business,
+  campaign,
   hashtagCount,
 }: {
   canRun: boolean;
   /** True when the scraper service is reachable from here (same machine). */
   local?: boolean;
   ranToday: boolean;
-  business: string;
+  campaign: string;
   hashtagCount: number;
 }) {
   const router = useRouter();
@@ -33,14 +33,14 @@ export function RunLauncher({
 
   const loadPreflight = useCallback(async () => {
     try {
-      const res = await fetch(`/api/preflight?business=${encodeURIComponent(business)}`, {
+      const res = await fetch(`/api/preflight?campaign=${encodeURIComponent(campaign)}`, {
         cache: "no-store",
       });
       setPreflight(await res.json());
     } catch {
       setError("Could not reach the app's own API. Is the dev server still running?");
     }
-  }, [business]);
+  }, [campaign]);
 
   useEffect(() => {
     void loadPreflight();
@@ -64,7 +64,7 @@ export function RunLauncher({
       const res = await fetch("/api/run", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ force, business }),
+        body: JSON.stringify({ force, campaign }),
       });
       const body = await res.json();
       if (!res.ok) {

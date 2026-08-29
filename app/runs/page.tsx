@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { getBusinesses, getDashboard, resolveBusiness } from "@/lib/data";
-import { BusinessTabs } from "@/components/nav/BusinessTabs";
+import { getCampaigns, getDashboard, resolveCampaign } from "@/lib/data";
+import { CampaignTabs } from "@/components/nav/CampaignTabs";
 import { campaignTime, dayLabel, num } from "@/lib/format";
 import { StatusPill } from "@/components/data/StatusPill";
 import { ExportButtons } from "@/components/data/ExportButtons";
@@ -15,9 +15,9 @@ export default async function RunsPage({
   searchParams: Promise<{ b?: string }>;
 }) {
   const { b } = await searchParams;
-  const [business, businesses] = await Promise.all([resolveBusiness(b), getBusinesses()]);
+  const [campaign, campaigns] = await Promise.all([resolveCampaign(b), getCampaigns()]);
 
-  if (!business) {
+  if (!campaign) {
     return (
       <EmptyState glyph="◇" headline="No campaigns set up yet">
         <Link href="/settings">Go to settings</Link>
@@ -25,14 +25,14 @@ export default async function RunsPage({
     );
   }
 
-  const d = await getDashboard(business);
-  const query = `?b=${encodeURIComponent(business.slug)}`;
+  const d = await getDashboard(campaign);
+  const query = `?b=${encodeURIComponent(campaign.slug)}`;
 
   if (d.runs.length === 0) {
     return (
       <EmptyState
         glyph="◌"
-        headline={`No scrapes recorded for ${business.name}`}
+        headline={`No scrapes recorded for ${campaign.name}`}
         hint="Once a scrape runs, every one is listed here with what it found."
       >
         <Link href={`/${query}`}>Back to dashboard</Link>
@@ -42,13 +42,13 @@ export default async function RunsPage({
 
   return (
     <>
-      <BusinessTabs businesses={businesses} selected={business.slug} basePath="/runs" />
+      <CampaignTabs campaigns={campaigns} selected={campaign.slug} basePath="/runs" />
 
       <section>
         <p className="label">Scrape history</p>
         <h1 className="text-[26px] font-bold">History</h1>
         <p className="muted text-[13px]">
-          {business.name} · {d.runs.length} scrape{d.runs.length === 1 ? "" : "s"} recorded
+          {campaign.name} · {d.runs.length} scrape{d.runs.length === 1 ? "" : "s"} recorded
         </p>
       </section>
 
@@ -97,7 +97,7 @@ export default async function RunsPage({
         </div>
       </section>
 
-      <ExportButtons business={business.slug} hasPosts={d.distinctPosts > 0} />
+      <ExportButtons campaign={campaign.slug} hasPosts={d.distinctPosts > 0} />
     </>
   );
 }

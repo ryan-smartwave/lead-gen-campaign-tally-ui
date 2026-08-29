@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { getBusinesses, getDashboard, resolveBusiness } from "@/lib/data";
-import { BusinessTabs } from "@/components/nav/BusinessTabs";
+import { getCampaigns, getDashboard, resolveCampaign } from "@/lib/data";
+import { CampaignTabs } from "@/components/nav/CampaignTabs";
 import { ExportButtons } from "@/components/data/ExportButtons";
 import { canRunScrapes } from "@/lib/capability";
 import { dayLabel, num, runStamp } from "@/lib/format";
@@ -22,13 +22,13 @@ export default async function DashboardPage({
   searchParams: Promise<{ b?: string }>;
 }) {
   const { b } = await searchParams;
-  const [business, businesses, local] = await Promise.all([
-    resolveBusiness(b),
-    getBusinesses(),
+  const [campaign, campaigns, local] = await Promise.all([
+    resolveCampaign(b),
+    getCampaigns(),
     canRunScrapes(),
   ]);
 
-  if (!business) {
+  if (!campaign) {
     return (
       <EmptyState
         glyph="◇"
@@ -44,28 +44,28 @@ export default async function DashboardPage({
     );
   }
 
-  const d = await getDashboard(business);
+  const d = await getDashboard(campaign);
 
   const latestRows = d.latestRun ? d.rows.filter((r) => r.runId === d.latestRun!.id) : [];
   const latestNew = latestRows.reduce((sum, r) => sum + r.newPosts, 0);
   const latestFresh = latestRows.reduce((sum, r) => sum + r.freshPosts, 0);
   // Only meaningful once a campaign window is set — otherwise fresh == new.
-  const hasCampaignWindow = Boolean(business.campaignStart || business.campaignEnd);
+  const hasCampaignWindow = Boolean(campaign.campaignStart || campaign.campaignEnd);
 
   return (
     <>
-      <BusinessTabs businesses={businesses} selected={business.slug} basePath="/" />
+      <CampaignTabs campaigns={campaigns} selected={campaign.slug} basePath="/" />
 
       <section className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="label">Campaign dashboard</p>
-          <h1 className="text-[26px] font-bold">{business.name}</h1>
+          <h1 className="text-[26px] font-bold">{campaign.name}</h1>
           {d.latestRun ? (
             <p className="muted text-[13px]">
               Last scrape {runStamp(d.latestRun.startedAt)} · {latestRows.length} hashtag
               {latestRows.length === 1 ? "" : "s"} ·{" "}
               <Link
-                href={`/runs/${encodeURIComponent(d.latestRun.id)}?b=${encodeURIComponent(business.slug)}`}
+                href={`/runs/${encodeURIComponent(d.latestRun.id)}?b=${encodeURIComponent(campaign.slug)}`}
               >
                 view run
               </Link>
@@ -78,11 +78,11 @@ export default async function DashboardPage({
       </section>
 
       <RunLauncher
-        canRun={local && business.hashtags.length > 0}
+        canRun={local && campaign.hashtags.length > 0}
         local={local}
         ranToday={d.ranToday}
-        business={business.slug}
-        hashtagCount={business.hashtags.length}
+        campaign={campaign.slug}
+        hashtagCount={campaign.hashtags.length}
       />
 
       {/* No sync notice any more: the scraper writes results to the database as
@@ -174,7 +174,7 @@ export default async function DashboardPage({
             <section className="card">
               <div className="row justify-between">
                 <span className="card-title">Recent scrapes</span>
-                <Link href={`/runs?b=${encodeURIComponent(business.slug)}`} className="text-[13px]">
+                <Link href={`/runs?b=${encodeURIComponent(campaign.slug)}`} className="text-[13px]">
                   All history →
                 </Link>
               </div>
@@ -184,7 +184,7 @@ export default async function DashboardPage({
                   return (
                     <Link
                       key={run.id}
-                      href={`/runs/${encodeURIComponent(run.id)}?b=${encodeURIComponent(business.slug)}`}
+                      href={`/runs/${encodeURIComponent(run.id)}?b=${encodeURIComponent(campaign.slug)}`}
                       className="list-row justify-between"
                     >
                       <span className="font-semibold">{dayLabel(run.day)}</span>
@@ -199,7 +199,7 @@ export default async function DashboardPage({
               </div>
             </section>
 
-            <ExportButtons business={business.slug} hasPosts={d.distinctPosts > 0} />
+            <ExportButtons campaign={campaign.slug} hasPosts={d.distinctPosts > 0} />
           </div>
         </>
       )}

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getPosts, getRun, resolveBusiness } from "@/lib/data";
+import { getPosts, getRun, resolveCampaign } from "@/lib/data";
 import { campaignTime, dayLabel, num } from "@/lib/format";
 import { StatusPill } from "@/components/data/StatusPill";
 import { PlatformIcon } from "@/components/data/PlatformIcon";
@@ -17,10 +17,10 @@ export default async function RunDetailPage({
 }) {
   const [{ id }, { b }] = await Promise.all([params, searchParams]);
   const runId = decodeURIComponent(id);
-  const business = await resolveBusiness(b);
-  if (!business) notFound();
+  const campaign = await resolveCampaign(b);
+  if (!campaign) notFound();
 
-  const detail = await getRun(business, runId);
+  const detail = await getRun(campaign, runId);
   if (!detail) notFound();
 
   const { run, rows, neverVisited, totals } = detail;
@@ -31,7 +31,7 @@ export default async function RunDetailPage({
       .filter((r) => r.newPosts > 0)
       .map(async (row) => ({
         row,
-        posts: await getPosts(business.slug, row.platform, row.hashtag, 60),
+        posts: await getPosts(campaign.slug, row.platform, row.hashtag, 60),
       })),
   );
 
@@ -40,9 +40,9 @@ export default async function RunDetailPage({
       <section className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="muted text-[13px]">
-            <Link href={`/runs?b=${encodeURIComponent(business.slug)}`}>← History</Link>
+            <Link href={`/runs?b=${encodeURIComponent(campaign.slug)}`}>← History</Link>
             {" · "}
-            <span>{business.name}</span>
+            <span>{campaign.name}</span>
           </p>
           <h1 className="text-[26px] font-bold">
             {dayLabel(run.day)} at {campaignTime(run.startedAt)}

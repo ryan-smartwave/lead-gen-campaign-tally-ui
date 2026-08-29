@@ -1,4 +1,4 @@
-import { getAllPosts, getDashboard, resolveBusiness } from "@/lib/data";
+import { getAllPosts, getDashboard, resolveCampaign } from "@/lib/data";
 import { exportFilename, postsCsv, runsCsv, talliesCsv } from "@/lib/csv";
 import { campaignDay } from "@/lib/format";
 
@@ -14,24 +14,24 @@ export const dynamic = "force-dynamic";
 export async function GET(request: Request) {
   const params = new URL(request.url).searchParams;
   const kind = params.get("kind") ?? "tallies";
-  const business = await resolveBusiness(params.get("business") ?? undefined);
+  const campaign = await resolveCampaign(params.get("campaign") ?? undefined);
 
-  if (!business) {
+  if (!campaign) {
     return new Response("No campaign configured.", { status: 404 });
   }
 
-  const data = await getDashboard(business);
+  const data = await getDashboard(campaign);
   let body: string;
 
   if (kind === "posts") {
-    body = postsCsv(await getAllPosts(business.slug));
+    body = postsCsv(await getAllPosts(campaign.slug));
   } else if (kind === "runs") {
     body = runsCsv(data.runs, data.rows);
   } else {
     body = talliesCsv(data.rows, data.runs);
   }
 
-  const filename = exportFilename(business.slug, kind, campaignDay());
+  const filename = exportFilename(campaign.slug, kind, campaignDay());
   return new Response(body, {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",

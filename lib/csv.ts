@@ -117,6 +117,6 @@ export function runsCsv(runs: Run[], rows: TallyRow[]): string {
 }
 
 /** A filename that sorts well and says what it is. */
-export function exportFilename(business: string, kind: string, day: string): string {
-  return `${business}-${kind}-${day}.csv`;
+export function exportFilename(campaign: string, kind: string, day: string): string {
+  return `${campaign}-${kind}-${day}.csv`;
 }
